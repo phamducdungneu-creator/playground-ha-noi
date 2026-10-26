@@ -1,0 +1,103 @@
+---
+// Avatar dropdown in the top bar: active child, quick switch, add child, profile overview.
+---
+
+<div class="relative shrink-0" id="memberMenu">
+  <button id="memberBtn" type="button" aria-haspopup="menu" aria-expanded="false"
+    class="h-12 pl-1.5 pr-3 rounded-2xl bg-white shadow-lg flex items-center gap-2 active:scale-[.98] transition">
+    <span id="memberAvatar" class="w-9 h-9 rounded-xl bg-amber-100 grid place-items-center text-xl">🐻</span>
+    <span class="text-left leading-tight">
+      <span id="memberName" class="block text-sm font-bold text-stone-800 max-w-[6.5rem] truncate">Bé</span>
+      <span id="memberAge" class="block text-[11px] text-stone-500"></span>
+    </span>
+    <svg class="w-4 h-4 text-stone-400" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z"/></svg>
+  </button>
+
+  <div id="memberPanel" role="menu" hidden
+    class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-xl border border-stone-100 overflow-hidden origin-top-right">
+    <div class="px-4 py-3 bg-gradient-to-br from-amber-50 to-emerald-50 border-b border-stone-100">
+      <p id="parentName" class="text-sm font-bold text-stone-800"></p>
+      <p id="parentEmail" class="text-xs text-stone-500"></p>
+    </div>
+    <p class="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400">Hồ sơ các bé</p>
+    <ul id="childList" class="px-2 pb-2 max-h-64 overflow-y-auto"></ul>
+    <div class="border-t border-stone-100 p-2 grid gap-1">
+      <button type="button" data-action="add" role="menuitem"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-emerald-800 hover:bg-emerald-50">
+        <span class="w-8 h-8 rounded-lg bg-emerald-100 grid place-items-center">＋</span>Thêm bé mới
+      </button>
+      <button type="button" data-action="profile" role="menuitem"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-stone-700 hover:bg-stone-50">
+        <span class="w-8 h-8 rounded-lg bg-stone-100 grid place-items-center">📋</span>Xem tổng quan hồ sơ
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { useMemberStore, ageOf, ageGroupOf } from "../stores/memberStore";
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const btn = $("memberBtn");
+  const panel = $("memberPanel");
+  const list = $("childList");
+
+  function setOpen(open: boolean) {
+    panel.hidden = !open;
+    btn.setAttribute("aria-expanded", String(open));
+  }
+  btn.addEventListener("click", () => setOpen(panel.hidden));
+  document.addEventListener("click", (e) => {
+    if (!$("memberMenu").contains(e.target as Node)) setOpen(false);
+  });
+  document.addEventListener("keydown", (e) => e.key === "Escape" && setOpen(false));
+
+  panel.addEventListener("click", (e) => {
+    const t = e.target as HTMLElement;
+    const edit = t.closest<HTMLElement>("[data-edit]");
+    const pick = t.closest<HTMLElement>("[data-switch]");
+    const action = t.closest<HTMLElement>("[data-action]")?.dataset.action;
+    if (edit) {
+      window.dispatchEvent(new CustomEvent("cham:child-modal", { detail: { id: edit.dataset.edit } }));
+    } else if (pick) {
+      useMemberStore.switchActiveChild(pick.dataset.switch!);
+    } else if (action === "add") {
+      window.dispatchEvent(new CustomEvent("cham:child-modal", { detail: {} }));
+    } else if (action === "profile") {
+      window.dispatchEvent(new Event("cham:profile-modal"));
+    } else return;
+    setOpen(false);
+  });
+
+  useMemberStore.subscribe((s) => {
+    const active = useMemberStore.activeChild();
+    $("parentName").textContent = s.user ? `👋 ${s.user.name}` : "Khách";
+    $("parentEmail").textContent = s.user ? `${s.user.email} · thành viên` : "Dữ liệu chỉ lưu trên thiết bị này";
+    $("memberAvatar").textContent = active?.animal ?? "➕";
+    $("memberName").textContent = active?.nickname ?? "Thêm bé";
+    $("memberAge").textContent = active ? `${ageOf(active)} tuổi` : "";
+
+    list.innerHTML = "";
+    for (const c of s.children) {
+      const on = c.id === active?.id;
+      const li = document.createElement("li");
+      li.className = `flex items-center gap-1 rounded-xl ${on ? "bg-emerald-50" : "hover:bg-stone-50"}`;
+      li.innerHTML = `
+        <button type="button" role="menuitemradio" aria-checked="${on}" data-switch="${c.id}"
+          class="flex-1 min-w-0 flex items-center gap-3 px-2 py-2 text-left">
+          <span class="w-9 h-9 shrink-0 rounded-xl ${on ? "bg-emerald-100" : "bg-amber-50"} grid place-items-center text-xl">${c.animal}</span>
+          <span class="min-w-0">
+            <span class="block text-sm font-semibold text-stone-800 truncate"></span>
+            <span class="block text-[11px] text-stone-500">${ageOf(c)} tuổi · nhóm ${ageGroupOf(ageOf(c))}${
+              c.health_screening.screened ? "" : ' · <span class="text-amber-700 font-semibold">chưa sàng lọc</span>'
+            }</span>
+          </span>
+          ${on ? '<span class="ml-auto text-emerald-700 text-sm">✓</span>' : ""}
+        </button>
+        <button type="button" data-edit="${c.id}" aria-label="Sửa hồ sơ"
+          class="w-9 h-9 shrink-0 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-white">✎</button>`;
+      li.querySelector(".truncate")!.textContent = c.nickname; // user text: never via innerHTML
+      list.appendChild(li);
+    }
+  });
+</script>

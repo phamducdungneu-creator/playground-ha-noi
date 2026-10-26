@@ -1,0 +1,109 @@
+---
+import { ANIMALS } from "../stores/memberStore";
+
+const thisYear = new Date().getFullYear();
+const years = Array.from({ length: 11 }, (_, i) => thisYear - i); // newborn .. 10 years old
+---
+
+<dialog id="childModal"
+  class="m-auto w-[min(26rem,calc(100vw-2rem))] rounded-3xl p-0 shadow-2xl backdrop:bg-stone-900/40 backdrop:backdrop-blur-sm">
+  <form id="childForm" method="dialog" class="p-5 space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Bước 1/2 · thông tin cơ bản</p>
+        <h2 id="childModalTitle" class="text-lg font-extrabold text-stone-800">Thêm bé mới</h2>
+      </div>
+      <button type="button" data-close class="w-9 h-9 rounded-full hover:bg-stone-100 text-stone-500" aria-label="Đóng">✕</button>
+    </div>
+
+    <label class="block space-y-1.5">
+      <span class="text-sm font-semibold text-stone-700">Tên bé</span>
+      <input name="nickname" required maxlength="20" placeholder="VD: Sam, Bơ, Mít…"
+        class="w-full h-11 rounded-xl border border-stone-200 px-3 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" />
+    </label>
+
+    <div class="grid grid-cols-[1fr_auto] gap-3 items-end">
+      <label class="block space-y-1.5">
+        <span class="text-sm font-semibold text-stone-700">Năm sinh</span>
+        <select name="birth_year"
+          class="w-full h-11 rounded-xl border border-stone-200 px-3 bg-white outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
+          {years.map((y) => <option value={y}>{y}</option>)}
+        </select>
+      </label>
+      <p id="groupBadge" class="h-11 px-3 rounded-xl bg-amber-50 text-amber-900 text-sm font-semibold grid place-items-center whitespace-nowrap"></p>
+    </div>
+
+    <fieldset class="space-y-1.5">
+      <legend class="text-sm font-semibold text-stone-700 mb-1.5">Con vật đại diện</legend>
+      <div class="grid grid-cols-5 gap-2">
+        {ANIMALS.map((a, i) => (
+          <label class="cursor-pointer">
+            <input type="radio" name="animal" value={a} class="peer sr-only" checked={i === 0} />
+            <span class="h-12 rounded-2xl bg-stone-50 border-2 border-transparent grid place-items-center text-2xl transition
+              peer-checked:border-emerald-600 peer-checked:bg-emerald-50 peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-200">{a}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+    <div class="flex gap-2 pt-1">
+      <button type="button" data-close class="flex-1 h-11 rounded-xl bg-stone-100 text-stone-700 font-semibold">Hủy</button>
+      <button type="submit" class="flex-[2] h-11 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold">Tiếp: Sàng lọc thể trạng →</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  import { useMemberStore, ageGroupOf } from "../stores/memberStore";
+
+  const dialog = document.getElementById("childModal") as HTMLDialogElement;
+  const form = document.getElementById("childForm") as HTMLFormElement;
+  const badge = document.getElementById("groupBadge")!;
+  const title = document.getElementById("childModalTitle")!;
+  const nicknameInput = form.elements.namedItem("nickname") as HTMLInputElement;
+  const yearSelect = form.elements.namedItem("birth_year") as HTMLSelectElement;
+  let editingId: string | null = null;
+
+  function updateBadge() {
+    const age = Math.max(0, new Date().getFullYear() - Number(yearSelect.value));
+    badge.textContent = `${age} tuổi · nhóm ${ageGroupOf(age)}`;
+  }
+  yearSelect.addEventListener("change", updateBadge);
+
+  window.addEventListener("cham:child-modal", (e) => {
+    const { id } = (e as CustomEvent<{ id?: string }>).detail ?? {};
+    const child = id ? useMemberStore.getState().children.find((c) => c.id === id) : undefined;
+    editingId = child?.id ?? null;
+    title.textContent = child ? "Chỉnh sửa hồ sơ bé" : "Thêm bé mới";
+    form.reset();
+    nicknameInput.value = child?.nickname ?? "";
+    yearSelect.value = String(child?.birth_year ?? new Date().getFullYear() - 4);
+    const animal = form.querySelector<HTMLInputElement>(`input[name=animal][value="${child?.animal ?? "🐻"}"]`);
+    if (animal) animal.checked = true;
+    updateBadge();
+    dialog.showModal();
+    nicknameInput.focus();
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const nickname = nicknameInput.value.trim();
+    if (!nickname) return nicknameInput.focus();
+    const data = {
+      nickname,
+      birth_year: Number(yearSelect.value),
+      animal: (form.querySelector<HTMLInputElement>("input[name=animal]:checked")?.value) ?? "🐻",
+    };
+    let id = editingId;
+    if (id) useMemberStore.updateChild(id, data);
+    else id = useMemberStore.addChild(data).id;
+    dialog.close();
+    // step 2: the musculoskeletal screening is required to complete the profile
+    window.dispatchEvent(new CustomEvent("cham:health-modal", { detail: { id, required: true } }));
+  });
+
+  dialog.addEventListener("click", (e) => {
+    const t = e.target as HTMLElement;
+    if (t === dialog || t.closest("[data-close]")) dialog.close(); // backdrop or ✕ / Hủy
+  });
+</script>

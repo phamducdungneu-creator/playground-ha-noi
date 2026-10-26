@@ -1,0 +1,115 @@
+{
+  "disclaimer": "Đây là bảng ghi nhận theo quan sát của cha mẹ để gợi ý sân chơi, không thay thế chẩn đoán y khoa. Nếu bé đau kéo dài, sưng khớp, đi khập khiễng hoặc dấu hiệu nặng dần, hãy đưa bé khám bác sĩ chuyên khoa nhi / chấn thương chỉnh hình nhi.",
+  "surfaces": {
+    "bai_cat": "Bãi cát",
+    "soi_cuoi": "Sỏi cuội",
+    "dat_go_ghe": "Đất gồ ghề",
+    "co_tu_nhien": "Cỏ tự nhiên",
+    "be_tong": "Nền bê tông",
+    "gach_men": "Gạch men / gạch lát"
+  },
+  "facilities": {
+    "than_go": "Thân gỗ để bước",
+    "lop_xe": "Lốp xe",
+    "cau_thang_bang": "Cầu thăng bằng",
+    "bap_benh": "Bập bênh",
+    "doi_co_doc": "Đồi cỏ dốc",
+    "xich_du_lop": "Xích đu lốp",
+    "xa_don": "Xà đơn",
+    "canh_cay": "Cành cây leo được",
+    "khung_leo_day": "Khung leo dây",
+    "khong_gian_rong": "Không gian rộng",
+    "cau_day_lac_lu": "Cầu dây lắc lư",
+    "dia_hinh_map_mo": "Địa hình mấp mô"
+  },
+  "groups": [
+    {
+      "id": "g1",
+      "icon": "🦶",
+      "name": "Bàn chân, Cổ chân & Ngón chân",
+      "short": "bàn chân",
+      "required_surfaces": ["bai_cat", "soi_cuoi", "dat_go_ghe"],
+      "blacklisted_surfaces": ["be_tong", "gach_men"],
+      "required_facilities": [],
+      "why": "Đi chân trần trên nền mềm, gồ ghề kích hoạt cơ nội tại bàn chân và vòm chân; nền cứng phẳng làm tăng tải lên gót và cổ chân."
+    },
+    {
+      "id": "g2",
+      "icon": "🦵",
+      "name": "Khớp gối & Cẳng chân",
+      "short": "khớp gối",
+      "required_surfaces": [],
+      "blacklisted_surfaces": [],
+      "required_facilities": ["than_go", "lop_xe", "cau_thang_bang"],
+      "why": "Bước qua thân gỗ, lốp xe, đi cầu thăng bằng giúp kiểm soát trục gối và tăng sức cơ quanh gối."
+    },
+    {
+      "id": "g3",
+      "icon": "🦴",
+      "name": "Khớp háng & Xương chậu",
+      "short": "khớp háng",
+      "required_surfaces": [],
+      "blacklisted_surfaces": [],
+      "required_facilities": ["bap_benh", "doi_co_doc", "xich_du_lop"],
+      "why": "Leo dốc, bập bênh và xích đu lốp rèn cơ mông, cơ xoay hông và kiểm soát khung chậu."
+    },
+    {
+      "id": "g4",
+      "icon": "🧍",
+      "name": "Cột sống, Lồng ngực & Bả vai",
+      "short": "cột sống",
+      "required_surfaces": [],
+      "blacklisted_surfaces": [],
+      "required_facilities": ["xa_don", "canh_cay", "khung_leo_day", "khong_gian_rong"],
+      "why": "Treo người, leo trèo và vươn thở ở không gian rộng giúp duỗi cột sống, mở lồng ngực và ổn định bả vai."
+    },
+    {
+      "id": "g5",
+      "icon": "🧠",
+      "name": "Dây chằng, Trương lực cơ & Vận động cảm giác",
+      "short": "vận động cảm giác",
+      "required_surfaces": [],
+      "blacklisted_surfaces": [],
+      "required_facilities": ["doi_co_doc", "cau_day_lac_lu", "dia_hinh_map_mo"],
+      "why": "Địa hình không bằng phẳng và chuyển động lắc lư cung cấp kích thích tiền đình, cảm giác bản thể và rèn cơ lõi."
+    }
+  ],
+  "conditions": [
+    { "id": "flat_foot", "group": "g1", "name_vi": "Bàn chân bẹt", "name_en": "Flexible flatfoot (Pes planus)", "sign": "Lòng bàn chân chạm sát đất khi đứng, trẻ hay kêu mỏi chân khi đi bộ lâu.", "note": "Vòm bàn chân thường chưa rõ trước 5–6 tuổi." },
+    { "id": "ankle_valgus", "group": "g1", "name_vi": "Cổ chân lệch trục", "name_en": "Hindfoot valgus", "sign": "Nhìn từ phía sau, gót chân lệch ra ngoài và mắt cá trong đổ vào trong." },
+    { "id": "high_arch", "group": "g1", "name_vi": "Bàn chân vòm cao", "name_en": "Pes cavus", "sign": "Lòng bàn chân cong vút, chủ yếu gót và mũi chân chạm đất, dễ lật cổ chân." },
+    { "id": "toe_walking", "group": "g1", "name_vi": "Đi nhón ngón / gân Achilles ngắn", "name_en": "Toe walking / tight Achilles tendon", "sign": "Trẻ thường đi bằng mũi chân, khó ngồi xổm mà vẫn giữ gót chạm đất.", "note": "Thỉnh thoảng đi nhón là bình thường dưới 2–3 tuổi." },
+    { "id": "metatarsus_adductus", "group": "g1", "name_vi": "Bàn chân quặp", "name_en": "Metatarsus adductus", "sign": "Nửa trước bàn chân cong vào trong như hạt đậu, giày hay mòn lệch." },
+    { "id": "hammer_toe", "group": "g1", "name_vi": "Ngón búa", "name_en": "Hammer toe / curly toe", "sign": "Một hoặc vài ngón chân gập cong xuống, có ngón đè lên ngón bên cạnh." },
+    { "id": "juvenile_bunion", "group": "g1", "name_vi": "Ngón cái vẹo ngoài sớm", "name_en": "Juvenile hallux valgus", "sign": "Ngón cái lệch về phía các ngón khác, gốc ngón cái nhô ra." },
+    { "id": "sever", "group": "g1", "name_vi": "Viêm sụn gót chân Sever", "name_en": "Sever's disease (calcaneal apophysitis)", "sign": "Trẻ đau gót sau khi chạy nhảy, hay đi nhón để tránh đau.", "note": "Thường gặp ở giai đoạn lớn nhanh, khoảng 8–14 tuổi." },
+
+    { "id": "genu_valgum", "group": "g2", "name_vi": "Chân chữ X", "name_en": "Genu valgum (knock knees)", "sign": "Khi đứng chụm hai đầu gối, hai mắt cá trong vẫn cách xa nhau.", "note": "Thường là sinh lý trong khoảng 3–7 tuổi." },
+    { "id": "genu_varum", "group": "g2", "name_vi": "Chân chữ O", "name_en": "Genu varum (bow legs)", "sign": "Khi đứng chụm hai mắt cá, hai đầu gối vẫn cách xa nhau.", "note": "Thường là sinh lý dưới 2 tuổi." },
+    { "id": "genu_recurvatum", "group": "g2", "name_vi": "Gối ưỡn ngược", "name_en": "Genu recurvatum", "sign": "Khi đứng thẳng, đầu gối ưỡn cong ra phía sau quá mức." },
+    { "id": "internal_tibial_torsion", "group": "g2", "name_vi": "Xoay trong xương chày", "name_en": "Internal tibial torsion", "sign": "Bàn chân chĩa vào trong khi đi, trẻ hay vấp chân vào nhau.", "note": "Thường tự cải thiện trước 4–5 tuổi." },
+    { "id": "external_tibial_torsion", "group": "g2", "name_vi": "Xoay ngoài xương chày", "name_en": "External tibial torsion", "sign": "Bàn chân chĩa ra ngoài nhiều kiểu “chân vịt” khi đi." },
+    { "id": "osgood_schlatter", "group": "g2", "name_vi": "Viêm lồi củ chày Osgood-Schlatter", "name_en": "Osgood-Schlatter disease", "sign": "Đau và có u nhỏ dưới xương bánh chè sau khi chạy, nhảy hoặc quỳ.", "note": "Thường gặp khoảng 9–14 tuổi." },
+
+    { "id": "femoral_anteversion", "group": "g3", "name_vi": "Xoay trước cổ xương đùi / ngồi chữ W", "name_en": "Femoral anteversion (W-sitting)", "sign": "Trẻ thích ngồi chữ W; khi đi, đầu gối và bàn chân chĩa vào trong." },
+    { "id": "anterior_pelvic_tilt", "group": "g3", "name_vi": "Khung chậu nghiêng trước / bụng ỏng", "name_en": "Anterior pelvic tilt", "sign": "Mông chổng, bụng ưỡn ra trước, lưng dưới cong võng." },
+    { "id": "pelvic_obliquity", "group": "g3", "name_vi": "Lệch khung chậu", "name_en": "Pelvic obliquity", "sign": "Hai bên hông hoặc hai nếp lằn mông cao thấp không đều." },
+    { "id": "trendelenburg", "group": "g3", "name_vi": "Yếu cơ mông nhỡ (dáng đi Trendelenburg)", "name_en": "Gluteus medius weakness", "sign": "Khi đi, hông bên chân nhấc lên bị xệ xuống, người lắc lư sang hai bên." },
+
+    { "id": "postural_kyphosis", "group": "g4", "name_vi": "Gù lưng tư thế học đường", "name_en": "Postural kyphosis", "sign": "Lưng trên tròn, vai đổ về trước khi ngồi học hoặc xem màn hình." },
+    { "id": "hyperlordosis", "group": "g4", "name_vi": "Ưỡn thắt lưng", "name_en": "Lumbar hyperlordosis", "sign": "Lưng dưới cong võng sâu, đứng lâu hay kêu mỏi lưng." },
+    { "id": "postural_scoliosis", "group": "g4", "name_vi": "Cong vẹo cột sống tư thế", "name_en": "Postural scoliosis", "sign": "Vai hoặc xương bả vai hai bên cao thấp lệch nhau khi đứng thẳng.", "note": "Nên khám chuyên khoa để phân biệt với vẹo cột sống cấu trúc." },
+    { "id": "forward_head", "group": "g4", "name_vi": "Hội chứng cổ rùa", "name_en": "Forward head posture (text neck)", "sign": "Đầu chúi ra trước vai, bé hay mỏi cổ khi dùng điện thoại, máy tính bảng." },
+    { "id": "winged_scapula", "group": "g4", "name_vi": "Bả vai cánh chim", "name_en": "Scapular winging", "sign": "Mép trong xương bả vai nhô lên rõ khi bé chống tay hoặc giơ tay." },
+    { "id": "chest_wall", "group": "g4", "name_vi": "Lồng ngực lõm / ức gà nhẹ", "name_en": "Mild pectus excavatum / carinatum", "sign": "Xương ức lõm vào hoặc nhô ra nhẹ ở giữa ngực." },
+
+    { "id": "joint_hypermobility", "group": "g5", "name_vi": "Lỏng lẻo khớp toàn thân", "name_en": "Generalized joint hypermobility", "sign": "Khớp gập quá mức (ngón tay bẻ ngược, khuỷu duỗi quá), bé hay bị lật chân." },
+    { "id": "hypotonia", "group": "g5", "name_vi": "Giảm trương lực cơ", "name_en": "Low muscle tone (hypotonia)", "sign": "Người mềm, nhanh mệt, thích tựa dựa và hay ngồi sụp." },
+    { "id": "tight_hamstrings", "group": "g5", "name_vi": "Co cứng gân khoeo", "name_en": "Tight hamstrings", "sign": "Bé khó ngồi duỗi thẳng chân, cúi người không chạm được mũi chân." },
+    { "id": "dcd", "group": "g5", "name_vi": "Rối loạn phối hợp vận động (DCD)", "name_en": "Developmental Coordination Disorder", "sign": "Vụng về hơn bạn cùng tuổi khi chạy, bắt bóng, đạp xe hay cài cúc áo." },
+    { "id": "vestibular", "group": "g5", "name_vi": "Rối loạn tiền đình", "name_en": "Vestibular processing difficulty", "sign": "Bé rất sợ xích đu, đu quay — hoặc ngược lại quay mãi không thấy chóng mặt." },
+    { "id": "proprioceptive", "group": "g5", "name_vi": "Rối loạn cảm giác bản thể", "name_en": "Proprioceptive dysfunction", "sign": "Bé hay va vào đồ vật, dùng lực quá mạnh hoặc quá nhẹ khi cầm nắm." },
+    { "id": "weak_core", "group": "g5", "name_vi": "Yếu cơ lõi sâu", "name_en": "Weak deep core muscles", "sign": "Bé khó đứng một chân, ngồi lâu là ngả nghiêng, dựa dẫm." },
+    { "id": "bilateral_asymmetry", "group": "g5", "name_vi": "Mất đối xứng vận động hai bên", "name_en": "Bilateral coordination asymmetry", "sign": "Một bên tay/chân dùng kém hẳn bên kia, khó nhảy chụm hai chân hoặc bò phối hợp." }
+  ]
+}

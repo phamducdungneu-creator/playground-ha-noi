@@ -1,0 +1,470 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MemberMenu from "../components/MemberMenu.astro";
+import ChildModal from "../components/ChildModal.astro";
+import ProfileModal from "../components/ProfileModal.astro";
+import HealthScreeningModal from "../components/HealthScreeningModal.astro";
+import { NATURE } from "../lib/metrics";
+---
+
+<Layout>
+  <main class="safe-top safe-bottom px-4 max-w-2xl mx-auto space-y-4">
+    <header class="flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Playground Hà Nội</p>
+        <h1 class="text-xl font-extrabold text-stone-800">Bảng vận động của bé</h1>
+      </div>
+      <MemberMenu />
+    </header>
+
+    <!-- First visit: no child profile yet -->
+    <section id="welcome" hidden aria-labelledby="welcomeTitle"
+      class="rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-amber-50 border border-emerald-100 shadow-sm p-6 text-center space-y-4">
+      <p class="text-5xl" aria-hidden="true">🌳🐻🛝</p>
+      <div class="space-y-1.5">
+        <h2 id="welcomeTitle" class="text-xl font-extrabold text-stone-800">Chào mừng đến Playground Hà Nội</h2>
+        <p class="text-sm text-stone-600">Theo dõi thời gian bé chơi ngoài trời, chạm thiên nhiên và vận động mỗi ngày, rồi nhận gợi ý sân chơi hợp với thể trạng của bé.</p>
+      </div>
+      <ul class="text-left text-sm text-stone-700 space-y-1.5 max-w-sm mx-auto">
+        <li>⏱️ Bấm giờ mỗi lần bé ra ngoài chơi</li>
+        <li>⭕ 3 vòng chỉ số mỗi ngày: ngoài trời · thiên nhiên · thử thách</li>
+        <li>🦴 Sàng lọc nhanh cơ – xương – khớp theo độ tuổi</li>
+      </ul>
+      <button id="welcomeAdd" type="button"
+        class="h-12 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow active:scale-95 transition">＋ Tạo hồ sơ cho bé</button>
+      <p class="text-[11px] text-stone-500">Không cần đăng ký. Dữ liệu chỉ lưu trên trình duyệt của thiết bị này.</p>
+    </section>
+
+    <!-- 1. Child profile switcher -->
+    <section id="kidCard" aria-label="Hồ sơ bé" class="bg-white rounded-3xl shadow-sm border border-stone-200 p-4">
+      <div class="flex items-center gap-3">
+        <span id="kidAvatar" class="w-16 h-16 shrink-0 rounded-2xl bg-amber-100 grid place-items-center text-4xl">🐻</span>
+        <div class="min-w-0 flex-1">
+          <p id="kidName" class="text-lg font-extrabold text-stone-800 truncate"></p>
+          <p id="kidMeta" class="text-xs text-stone-500"></p>
+        </div>
+        <button id="kidEdit" type="button" aria-label="Sửa hồ sơ bé"
+          class="w-10 h-10 shrink-0 rounded-xl bg-stone-100 text-stone-600 hover:bg-stone-200">✎</button>
+      </div>
+      <div id="kidSwitch" role="radiogroup" aria-label="Chọn bé"
+        class="mt-3 flex gap-2 overflow-x-auto -mx-4 px-4 [scrollbar-width:none]"></div>
+      <button id="screenBanner" type="button" hidden
+        class="mt-3 w-full text-left text-xs rounded-xl bg-amber-50 border border-amber-200 text-amber-900 px-3 py-2">
+        ⚠️ Hồ sơ của bé chưa sàng lọc thể trạng. <b class="underline">Hoàn thiện ngay</b> để ưu tiên sân phù hợp với xương khớp của bé.
+      </button>
+    </section>
+
+    <a href="/phan-tich"
+      class="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-700 text-white px-4 py-3 shadow-sm hover:brightness-110">
+      <span class="text-2xl">🧬</span>
+      <span class="min-w-0 flex-1">
+        <span class="block text-sm font-bold">Phân tích hồ sơ thể chất 4 trục</span>
+        <span class="block text-xs text-emerald-100">Tuổi · chiều cao · cân nặng · 32 mục cơ xương khớp → nhóm G1–G7</span>
+      </span>
+      <span aria-hidden="true">→</span>
+    </a>
+    <a href="/tham-khao"
+      class="flex items-center gap-3 rounded-2xl bg-white border border-stone-200 px-4 py-3 shadow-sm hover:border-emerald-300">
+      <span class="text-2xl">📚</span>
+      <span class="min-w-0 flex-1">
+        <span class="block text-sm font-bold text-stone-800">Thư viện kiến thức cơ – xương – khớp</span>
+        <span class="block text-xs text-stone-500">Bài tham chiếu POSNA · AAP · APTA dành riêng cho tình trạng của bé</span>
+      </span>
+      <span aria-hidden="true" class="text-stone-400">→</span>
+    </a>
+
+    <div id="dash" class="space-y-4">
+    <!-- Outdoor play timer: start with one tap, stop with a tap or by typing the end time -->
+    <section aria-label="Đồng hồ ra ngoài chơi" class="bg-white rounded-3xl shadow-sm border border-stone-200 p-4">
+      <div id="timerIdle" class="flex items-center gap-3">
+        <div class="min-w-0 flex-1">
+          <p class="font-extrabold text-stone-800">⏱️ Đồng hồ ra ngoài chơi</p>
+          <p class="text-xs text-stone-500">Bấm khi bé bắt đầu ra ngoài, thời gian sẽ tự cộng vào vòng xanh.</p>
+        </div>
+        <button id="timerStart" type="button"
+          class="shrink-0 h-12 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow active:scale-95 transition">▶ Bắt đầu</button>
+      </div>
+
+      <div id="timerRun" hidden class="space-y-3">
+        <div class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-xs font-semibold text-emerald-700 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span id="timerWho" class="truncate"></span>
+            </p>
+            <p id="timerElapsed" role="timer" class="text-4xl font-extrabold tabular-nums text-stone-800">00:00:00</p>
+            <p id="timerSince" class="text-xs text-stone-500"></p>
+          </div>
+          <button id="timerStop" type="button"
+            class="shrink-0 h-12 px-5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow active:scale-95 transition">■ Kết thúc</button>
+        </div>
+        <form id="timerManual" class="flex flex-wrap items-center gap-2 rounded-2xl bg-stone-50 p-2.5">
+          <label for="timerEnd" class="text-xs text-stone-600">Hoặc điền giờ kết thúc:</label>
+          <input id="timerEnd" type="time" required
+            class="h-10 rounded-xl border border-stone-200 px-2 bg-white outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" />
+          <button type="submit" class="h-10 px-4 rounded-xl bg-stone-800 hover:bg-stone-900 text-white text-sm font-semibold">Lưu</button>
+          <button id="timerCancel" type="button" class="ml-auto text-xs text-stone-500 underline">Huỷ phiên</button>
+        </form>
+        <p id="timerError" hidden class="text-xs font-semibold text-rose-700"></p>
+      </div>
+    </section>
+
+    <!-- 2. Weekly strip + daily snapshot (smartwatch style) -->
+    <section aria-label="Chỉ số trong ngày" class="bg-stone-900 text-white rounded-3xl p-4 shadow-lg space-y-4">
+      <div class="flex items-center justify-between">
+        <button id="prevWeek" type="button" aria-label="Tuần trước"
+          class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-lg">‹</button>
+        <p id="weekLabel" class="text-sm font-semibold text-stone-300"></p>
+        <button id="nextWeek" type="button" aria-label="Tuần sau"
+          class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-lg disabled:opacity-30 disabled:hover:bg-white/10">›</button>
+      </div>
+      <div id="week" class="grid grid-cols-7 gap-1"></div>
+
+      <div>
+        <p id="dayTitle" class="text-xs font-semibold uppercase tracking-wider text-stone-400"></p>
+        <div class="mt-2 flex items-center gap-4 sm:gap-6">
+          <div id="bigRings" class="relative shrink-0 w-32 h-32 sm:w-44 sm:h-44"></div>
+          <div id="legend" class="flex-1 min-w-0 space-y-3"></div>
+        </div>
+      </div>
+
+      <div id="sessions" class="space-y-1"></div>
+
+      <div class="rounded-2xl bg-white/5 p-3 space-y-2">
+        <p class="text-xs text-stone-300">Hôm đó bé đã chạm vào… <span class="text-stone-500">(bấm biểu tượng đã ghi để xoá)</span></p>
+        <div class="flex flex-wrap gap-1.5">
+          {NATURE.map((n) => (
+            <button type="button" data-nature={n.id}
+              class="log-btn h-9 px-3 rounded-full bg-cyan-400/15 text-cyan-100 text-sm font-medium hover:bg-cyan-400/25 disabled:opacity-30">+ {n.icon} {n.label}</button>
+          ))}
+        </div>
+        <div id="natureDone" class="flex flex-wrap gap-1 min-h-8"></div>
+      </div>
+    </section>
+
+    <!-- 3. Indicator tiles -->
+    <section aria-label="Bộ chỉ số" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-white rounded-2xl border border-stone-200 p-3 space-y-1.5">
+        <p class="text-xs font-semibold text-stone-500">📱 Màn hình</p>
+        <p class="text-2xl font-extrabold text-stone-800"><span id="screenVal">0</span><span class="text-sm font-semibold text-stone-500"> phút</span></p>
+        <div class="h-1.5 rounded-full bg-stone-100 overflow-hidden"><div id="screenBar" class="h-full rounded-full"></div></div>
+        <p id="screenHint" class="text-[11px] text-stone-500"></p>
+        <div class="flex gap-1.5 pt-0.5">
+          <button type="button" data-screen="-15" class="log-btn flex-1 h-8 rounded-lg bg-stone-100 text-sm font-semibold text-stone-700 disabled:opacity-30">−15</button>
+          <button type="button" data-screen="15" class="log-btn flex-1 h-8 rounded-lg bg-stone-100 text-sm font-semibold text-stone-700 disabled:opacity-30">+15</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-stone-200 p-3 space-y-1.5">
+        <p class="text-xs font-semibold text-stone-500">🔥 Chuỗi ngày</p>
+        <p class="text-2xl font-extrabold text-stone-800"><span id="streakVal">0</span><span class="text-sm font-semibold text-stone-500"> ngày</span></p>
+        <p class="text-[11px] text-stone-500">liên tiếp đủ <span id="streakGoal">60</span> phút ngoài trời</p>
+      </div>
+      <div class="bg-white rounded-2xl border border-stone-200 p-3 space-y-1.5">
+        <p class="text-xs font-semibold text-stone-500">🌳 Ngoài trời tuần này</p>
+        <p class="text-2xl font-extrabold text-stone-800"><span id="weekOutdoor">0</span><span class="text-sm font-semibold text-stone-500"> / <span id="weekOutdoorGoal">420</span>'</span></p>
+        <div class="h-1.5 rounded-full bg-stone-100 overflow-hidden"><div id="weekOutdoorBar" class="h-full rounded-full bg-emerald-500"></div></div>
+        <p id="weekAvg" class="text-[11px] text-stone-500"></p>
+      </div>
+      <div class="bg-white rounded-2xl border border-stone-200 p-3 space-y-1.5">
+        <p class="text-xs font-semibold text-stone-500">⭐ Vòng khép kín</p>
+        <p class="text-2xl font-extrabold text-stone-800"><span id="ringsVal">0</span><span class="text-sm font-semibold text-stone-500"> / 21</span></p>
+        <p class="text-[11px] text-stone-500">vòng chỉ số đạt mục tiêu trong tuần</p>
+      </div>
+    </section>
+
+    <!-- 4. Today's playground suggestions -->
+    <section aria-labelledby="suggestTitle" class="space-y-3">
+      <div>
+        <h2 id="suggestTitle" class="text-lg font-extrabold text-stone-800">Ra sân hôm nay</h2>
+        <p id="suggestHint" class="text-xs text-stone-500">Hoàn thành thử thách ở sân để khép vòng vàng.</p>
+      </div>
+      <div id="list" class="space-y-3"></div>
+    </section>
+    </div>
+
+    <footer class="text-center text-[11px] text-stone-400 pb-2 space-y-1">
+      <p>Nội dung sức khoẻ chỉ mang tính tham khảo, không thay thế thăm khám của bác sĩ.</p>
+      <p>Dữ liệu sân chơi, công viên: © <a class="underline" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL).</p>
+    </footer>
+  </main>
+
+  <ChildModal />
+  <ProfileModal />
+  <HealthScreeningModal />
+</Layout>
+
+<script>
+  import { useMemberStore, ageOf, ageGroupOf, dayKey, dayOf } from "../stores/memberStore";
+  import { places } from "../data/places";
+  import { placeFit, type Fit } from "../lib/recommend";
+  import { renderCard } from "../lib/renderCard";
+  import { RING_COLORS, addDays, closedRings, fromKey, goalsFor, natureIcon, outdoorStreak, ringValues, ringsSvg, weekOf } from "../lib/metrics";
+
+  const $ = (id: string) => document.getElementById(id)!;
+  const WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+  const SUGGESTIONS = 3;
+  // great/ok first, then places without data, poor fits last
+  const TIER: Record<Fit["level"], number> = { great: 0, ok: 1, none: 2, unknown: 2, poor: 3 };
+
+  let sel = dayKey();
+
+  function render() {
+    const child = useMemberStore.activeChild();
+    const s = useMemberStore.getState();
+    const today = dayKey();
+
+    // ---------- profile switcher ----------
+    $("kidAvatar").textContent = child?.animal ?? "➕";
+    $("kidName").textContent = child?.nickname ?? "Chưa có hồ sơ bé";
+    $("kidMeta").textContent = child
+      ? `${ageOf(child)} tuổi · nhóm ${ageGroupOf(ageOf(child))} · ${child.health_screening.screened ? "đã sàng lọc thể trạng" : "chưa sàng lọc"}`
+      : "Thêm hồ sơ để theo dõi chỉ số";
+    ($("kidEdit") as HTMLButtonElement).hidden = !child;
+    $("screenBanner").hidden = !child || child.health_screening.screened;
+    const sw = $("kidSwitch");
+    sw.replaceChildren(
+      ...s.children.map((c) => {
+        const on = c.id === child?.id;
+        const b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("role", "radio");
+        b.setAttribute("aria-checked", String(on));
+        b.dataset.switch = c.id;
+        b.className = `shrink-0 h-10 pl-1.5 pr-3 rounded-full flex items-center gap-1.5 text-sm font-semibold transition ${
+          on ? "bg-emerald-700 text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200"}`;
+        const av = document.createElement("span");
+        av.className = `w-7 h-7 rounded-full grid place-items-center text-base ${on ? "bg-white/20" : "bg-white"}`;
+        av.textContent = c.animal;
+        b.append(av, `${c.nickname} · ${ageOf(c)}t`); // user text via a text node
+        return b;
+      }),
+    );
+    const add = document.createElement("button");
+    add.type = "button";
+    add.dataset.add = "";
+    add.className = "shrink-0 h-10 px-3 rounded-full border-2 border-dashed border-emerald-300 text-sm font-semibold text-emerald-800 hover:bg-emerald-50";
+    add.textContent = "＋ Thêm bé";
+    sw.append(add);
+
+    $("welcome").hidden = !!child;
+    $("kidCard").hidden = !child;
+    $("dash").hidden = !child;
+    if (!child) return;
+
+    // ---------- week strip ----------
+    const goals = goalsFor(ageOf(child));
+    const week = weekOf(sel);
+    const fmt = (k: string, o: Intl.DateTimeFormatOptions) => fromKey(k).toLocaleDateString("vi-VN", o);
+    $("weekLabel").textContent = week.includes(today) ? "Tuần này" : `${fmt(week[0], { day: "numeric", month: "numeric" })} – ${fmt(week[6], { day: "numeric", month: "numeric" })}`;
+    ($("nextWeek") as HTMLButtonElement).disabled = week.includes(today);
+    $("week").replaceChildren(
+      ...week.map((k, i) => {
+        const future = k > today;
+        const b = document.createElement("button");
+        b.type = "button";
+        b.dataset.day = k;
+        b.disabled = future;
+        b.setAttribute("aria-pressed", String(k === sel));
+        b.setAttribute("aria-label", fmt(k, { weekday: "long", day: "numeric", month: "numeric" }));
+        b.className = `rounded-2xl py-1.5 flex flex-col items-center gap-1 transition ${k === sel ? "bg-white/15 ring-1 ring-white/30" : "hover:bg-white/5"} ${future ? "opacity-30" : ""}`;
+        b.innerHTML = `<span class="text-[11px] font-semibold ${k === today ? "text-emerald-300" : "text-stone-400"}">${WEEKDAYS[i]}</span>
+          <span class="w-9 h-9">${ringsSvg(future ? [0, 0, 0] : ringValues(dayOf(child, k), goals), 100, 0.14)}</span>
+          <span class="text-xs font-bold ${k === today ? "text-emerald-300" : ""}">${fromKey(k).getDate()}</span>`;
+        return b;
+      }),
+    );
+
+    // ---------- daily snapshot ----------
+    const d = dayOf(child, sel);
+    const vals = ringValues(d, goals);
+    const closed = closedRings(d, goals);
+    $("dayTitle").textContent = sel === today ? "Hôm nay" : fmt(sel, { weekday: "long", day: "numeric", month: "numeric" });
+    $("bigRings").innerHTML = ringsSvg(vals, 100, 0.11) +
+      `<span class="absolute inset-0 grid place-items-center text-2xl">${closed === 3 ? "🏆" : child.animal}</span>`;
+    const rows = [
+      { label: "Ngoài trời", val: d.outdoor_min, goal: goals.outdoor_min, unit: "phút", step: "outdoor" },
+      { label: "Chạm thiên nhiên", val: d.nature.length, goal: goals.nature, unit: "lần" },
+      { label: "Thử thách", val: d.exercises.length, goal: goals.exercises, unit: "bài" },
+    ];
+    $("legend").innerHTML = rows
+      .map((r, i) => `<div>
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-xs text-stone-300 truncate">${r.label}</p>
+          ${r.step ? `<div class="flex gap-1 shrink-0">
+            <button type="button" data-outdoor="-15" class="log-btn w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-sm" aria-label="Bớt 15 phút ngoài trời">−</button>
+            <button type="button" data-outdoor="15" class="log-btn h-7 px-2 rounded-full text-stone-900 text-xs font-bold" style="background:${RING_COLORS[0]}" aria-label="Thêm 15 phút ngoài trời">+15'</button>
+          </div>` : ""}
+        </div>
+        <p class="font-extrabold leading-tight" style="color:${RING_COLORS[i]}">
+          <span class="text-2xl">${r.val}</span><span class="text-sm">/${r.goal} ${r.unit}</span>
+          ${r.val >= r.goal ? '<span class="text-sm"> ✓</span>' : ""}
+        </p>
+      </div>`)
+      .join("");
+    // past days can still be filled in afterwards; only the future is locked
+    document.querySelectorAll<HTMLButtonElement>(".log-btn").forEach((b) => (b.disabled = sel > today));
+    $("natureDone").innerHTML = d.nature.length
+      ? d.nature.map((n, i) => `<button type="button" data-remove="${i}" class="w-8 h-8 rounded-full bg-white/10 hover:bg-rose-500/40 text-lg" aria-label="Xoá">${natureIcon(n)}</button>`).join("")
+      : '<span class="text-xs text-stone-500 self-center">Chưa ghi lần nào.</span>';
+
+    $("sessions").innerHTML = d.sessions.length
+      ? `<p class="text-xs font-semibold uppercase tracking-wider text-stone-400">Các lần ra ngoài</p>` +
+        d.sessions
+          .map((x, i) => `<div class="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2 text-sm">
+            <span>🕓</span><span class="font-semibold tabular-nums">${clock(x.start)} – ${clock(x.end)}</span>
+            <span class="text-emerald-300">· ${Math.round((x.end - x.start) / 60_000)} phút</span>
+            <button type="button" data-session="${i}" class="log-btn ml-auto w-7 h-7 rounded-full hover:bg-rose-500/40 text-stone-400" aria-label="Xoá lần này">✕</button>
+          </div>`)
+          .join("")
+      : "";
+
+    // ---------- tiles ----------
+    $("screenVal").textContent = String(d.screen_min);
+    const over = d.screen_min > goals.screen_max;
+    const bar = $("screenBar");
+    bar.style.width = `${goals.screen_max ? Math.min(100, (d.screen_min / goals.screen_max) * 100) : d.screen_min ? 100 : 0}%`;
+    bar.className = `h-full rounded-full ${over ? "bg-rose-500" : "bg-sky-500"}`;
+    $("screenHint").textContent = goals.screen_max
+      ? over ? `Vượt ${d.screen_min - goals.screen_max} phút so với giới hạn ${goals.screen_max}'` : `Giới hạn ${goals.screen_max}' cho tuổi của bé`
+      : "Dưới 2 tuổi: khuyến nghị không dùng màn hình";
+
+    $("streakVal").textContent = String(outdoorStreak(child));
+    $("streakGoal").textContent = String(goals.outdoor_min);
+
+    const past = week.filter((k) => k <= today);
+    const weekMin = past.reduce((sum, k) => sum + dayOf(child, k).outdoor_min, 0);
+    $("weekOutdoor").textContent = String(weekMin);
+    $("weekOutdoorGoal").textContent = String(goals.outdoor_min * 7);
+    $("weekOutdoorBar").style.width = `${Math.min(100, (weekMin / (goals.outdoor_min * 7)) * 100)}%`;
+    $("weekAvg").textContent = `Trung bình ${Math.round(weekMin / past.length)} phút/ngày`;
+    $("ringsVal").textContent = String(past.reduce((sum, k) => sum + closedRings(dayOf(child, k), goals), 0));
+
+    renderTimer();
+    renderSuggestions();
+  }
+
+  // ---------- outdoor timer ----------
+  const clock = (ms: number) => new Date(ms).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  function showTimerError(msg: string | null) {
+    $("timerError").textContent = msg ?? "";
+    $("timerError").hidden = !msg;
+  }
+
+  function tick() {
+    const start = useMemberStore.activeChild()?.timer_start;
+    if (start == null) return;
+    const s = Math.max(0, Math.floor((Date.now() - start) / 1000));
+    $("timerElapsed").textContent = `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
+  }
+
+  let wasRunning: string | null = null; // id of the child whose running timer is on screen
+  function renderTimer() {
+    const child = useMemberStore.activeChild();
+    const running = child?.timer_start != null;
+    $("timerIdle").hidden = running;
+    $("timerRun").hidden = !running;
+    if (!running || !child) {
+      wasRunning = null;
+      return;
+    }
+    $("timerWho").textContent = `${child.animal} ${child.nickname} đang chơi ngoài trời`;
+    $("timerSince").textContent = `Bắt đầu lúc ${clock(child.timer_start!)}${
+      dayKey(new Date(child.timer_start!)) === dayKey() ? "" : ` ngày ${new Date(child.timer_start!).toLocaleDateString("vi-VN")}`}`;
+    if (wasRunning !== child.id) {
+      // fresh panel: prefill "now" so typing an end time is a small correction
+      ($("timerEnd") as HTMLInputElement).value = `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`;
+      showTimerError(null);
+      wasRunning = child.id;
+    }
+    tick();
+  }
+  setInterval(tick, 1000);
+
+  $("timerStart").addEventListener("click", () => {
+    if (!useMemberStore.activeChild()) return window.dispatchEvent(new CustomEvent("cham:child-modal", { detail: {} }));
+    useMemberStore.startTimer();
+  });
+  $("timerStop").addEventListener("click", () => showTimerError(useMemberStore.stopTimer()));
+  $("timerManual").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const start = useMemberStore.activeChild()?.timer_start;
+    const [h, m] = ($("timerEnd") as HTMLInputElement).value.split(":").map(Number);
+    if (start == null || Number.isNaN(h)) return;
+    // the typed time is on the start day, or the next day when the session crossed midnight
+    const end = new Date(start);
+    end.setHours(h, m, 0, 0);
+    if (end.getTime() <= start && dayKey(new Date(start)) !== dayKey()) end.setDate(end.getDate() + 1);
+    showTimerError(useMemberStore.stopTimer(end.getTime()));
+  });
+  $("timerCancel").addEventListener("click", () => {
+    if (confirm("Huỷ phiên này? Thời gian đang đếm sẽ không được ghi lại.")) useMemberStore.cancelTimer();
+  });
+
+  function renderSuggestions() {
+    const child = useMemberStore.activeChild()!;
+    const conds = child.health_screening.selected_condition_ids;
+    const group = ageGroupOf(ageOf(child));
+    const best = places
+      .map((p) => ({ p, fit: placeFit(p, conds) }))
+      .sort((a, b) =>
+        TIER[a.fit.level] - TIER[b.fit.level] ||
+        b.fit.score - a.fit.score ||
+        Number(b.p.exercises.some((e) => e.group === group)) - Number(a.p.exercises.some((e) => e.group === group)) ||
+        Number(b.p.source === "curated") - Number(a.p.source === "curated") ||
+        a.p.name.localeCompare(b.p.name, "vi"),
+      )
+      .slice(0, SUGGESTIONS);
+    const ctx = { group, kidLabel: `${child.nickname} (${ageOf(child)} tuổi)`, kidName: child.nickname, done: new Set(child.completed_exercises) };
+    $("list").replaceChildren(...best.map(({ p, fit }) => renderCard(p, { ...ctx, fit })));
+    $("suggestHint").textContent = `${child.animal} Gợi ý cho ${child.nickname} · hoàn thành thử thách để khép vòng vàng.`;
+  }
+
+  // ---------- events ----------
+  $("kidSwitch").addEventListener("click", (e) => {
+    const t = e.target as HTMLElement;
+    const pick = t.closest<HTMLElement>("[data-switch]");
+    if (pick) useMemberStore.switchActiveChild(pick.dataset.switch!);
+    else if (t.closest("[data-add]")) window.dispatchEvent(new CustomEvent("cham:child-modal", { detail: {} }));
+  });
+  $("welcomeAdd").addEventListener("click", () => window.dispatchEvent(new CustomEvent("cham:child-modal", { detail: {} })));
+  $("kidEdit").addEventListener("click", () =>
+    window.dispatchEvent(new CustomEvent("cham:child-modal", { detail: { id: useMemberStore.activeChild()?.id } })),
+  );
+  $("screenBanner").addEventListener("click", () =>
+    window.dispatchEvent(new CustomEvent("cham:health-modal", { detail: { id: useMemberStore.activeChild()?.id } })),
+  );
+  $("prevWeek").addEventListener("click", () => {
+    sel = addDays(sel, -7);
+    render();
+  });
+  $("nextWeek").addEventListener("click", () => {
+    const next = addDays(sel, 7);
+    sel = next > dayKey() ? dayKey() : next;
+    render();
+  });
+  $("week").addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-day]");
+    if (b && !b.disabled) {
+      sel = b.dataset.day!;
+      render();
+    }
+  });
+  // logging buttons live in several places; one delegated handler covers them all
+  document.querySelector("main")!.addEventListener("click", (e) => {
+    const t = e.target as HTMLElement;
+    const b = t.closest<HTMLButtonElement>("[data-outdoor],[data-screen],[data-nature],[data-remove],[data-session]");
+    if (!b || b.disabled) return;
+    if (b.dataset.session) useMemberStore.removeSession(sel, Number(b.dataset.session));
+    else if (b.dataset.outdoor) useMemberStore.logActivity(sel, { outdoor_min: Number(b.dataset.outdoor) });
+    else if (b.dataset.screen) useMemberStore.logActivity(sel, { screen_min: Number(b.dataset.screen) });
+    else if (b.dataset.nature) useMemberStore.logActivity(sel, { nature: b.dataset.nature });
+    else useMemberStore.removeNature(sel, Number(b.dataset.remove));
+  });
+  $("list").addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(".done-btn");
+    if (btn) useMemberStore.toggleExerciseComplete(btn.dataset.exercise!);
+  });
+
+  useMemberStore.subscribe(render);
+</script>

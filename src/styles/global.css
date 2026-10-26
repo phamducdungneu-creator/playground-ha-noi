@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* Safe-area insets (notch / dynamic island / gesture bar). The values are 0 in a
+   normal browser and become real once the page runs full-screen in the native
+   app, thanks to viewport-fit=cover in the layout. */
+@utility safe-top {
+  padding-top: max(env(safe-area-inset-top), 0.75rem);
+}
+@utility safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
+}
+@utility safe-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  overscroll-behavior-y: none;
+}

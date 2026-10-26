@@ -1,0 +1,156 @@
+---
+import { CONDITIONS, DISCLAIMER, GROUPS } from "../data/conditions";
+---
+
+<dialog id="healthModal"
+  class="m-auto mb-0 sm:mb-auto w-full sm:w-[min(34rem,calc(100vw-2rem))] max-w-none sm:max-w-[34rem] max-h-[94dvh] rounded-t-3xl sm:rounded-3xl p-0 shadow-2xl backdrop:bg-stone-900/40 backdrop:backdrop-blur-sm">
+  <form id="healthForm" class="flex flex-col max-h-[94dvh]">
+    <!-- header -->
+    <div class="shrink-0 px-5 pt-4 pb-3 border-b border-stone-100">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p id="hsStep" class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700"></p>
+          <h2 class="text-lg font-extrabold text-stone-800">Sàng lọc thể trạng <span id="hsName" class="text-emerald-800"></span></h2>
+          <p class="text-xs text-stone-500">Tích những dấu hiệu bố mẹ quan sát thấy ở bé. Không chắc thì bỏ qua.</p>
+        </div>
+        <button type="button" id="hsClose" class="w-9 h-9 shrink-0 rounded-full hover:bg-stone-100 text-stone-500" aria-label="Đóng">✕</button>
+      </div>
+      <p class="mt-2 text-[11px] leading-snug rounded-xl bg-amber-50 text-amber-900 px-3 py-2">⚕️ {DISCLAIMER}</p>
+    </div>
+
+    <!-- body -->
+    <div class="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-2">
+      {GROUPS.map((g, gi) => (
+        <details class="hs-group group rounded-2xl border border-stone-200 bg-white open:border-emerald-200 open:shadow-sm" open={gi === 0}>
+          <summary class="flex items-center gap-3 px-3 py-3 cursor-pointer list-none select-none">
+            <span class="w-9 h-9 rounded-xl bg-emerald-50 grid place-items-center text-lg shrink-0">{g.icon}</span>
+            <span class="flex-1 min-w-0">
+              <span class="block text-sm font-bold text-stone-800">{g.name}</span>
+              <span class="block text-[11px] text-stone-500">{CONDITIONS.filter((c) => c.group === g.id).length} tình trạng</span>
+            </span>
+            <span class="hs-count hidden text-xs font-bold bg-emerald-700 text-white rounded-full min-w-6 h-6 px-2 grid place-items-center" data-group={g.id}></span>
+            <svg class="w-4 h-4 text-stone-400 transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z"/></svg>
+          </summary>
+          <div class="px-2 pb-2 space-y-1.5">
+            {CONDITIONS.filter((c) => c.group === g.id).map((c) => (
+              <label class="flex gap-3 p-2.5 rounded-xl cursor-pointer hover:bg-stone-50 has-[:checked]:bg-emerald-50 has-[:checked]:ring-1 has-[:checked]:ring-emerald-200">
+                <input type="checkbox" name="condition" value={c.id} data-group={g.id}
+                  class="mt-0.5 w-5 h-5 shrink-0 accent-emerald-700" />
+                <span class="min-w-0">
+                  <span class="block text-sm font-semibold text-stone-800">{c.name_vi}</span>
+                  <span class="block text-[11px] italic text-stone-400">{c.name_en}</span>
+                  <span class="block text-xs text-stone-600 mt-0.5">{c.sign}</span>
+                  {c.note && <span class="block text-[11px] text-sky-800 mt-0.5">ℹ️ {c.note}</span>}
+                </span>
+              </label>
+            ))}
+            <p class="px-2.5 pt-1 text-[11px] text-emerald-800">💡 {g.why}</p>
+          </div>
+        </details>
+      ))}
+
+      <label class="flex gap-3 p-3 rounded-2xl border border-dashed border-stone-300 cursor-pointer has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50">
+        <input type="checkbox" id="hsNone" class="mt-0.5 w-5 h-5 shrink-0 accent-emerald-700" />
+        <span>
+          <span class="block text-sm font-semibold text-stone-800">Bé không có dấu hiệu nào ở trên</span>
+          <span class="block text-xs text-stone-500">Ứng dụng sẽ gợi ý sân chơi theo khoảng cách và độ tuổi.</span>
+        </span>
+      </label>
+
+      <label class="block space-y-1.5 pt-1">
+        <span class="text-sm font-semibold text-stone-700">Ghi chú thêm <span class="font-normal text-stone-400">(không bắt buộc)</span></span>
+        <textarea id="hsNotes" rows="2" maxlength="300" placeholder="VD: bác sĩ đã chẩn đoán, đang đi giày chỉnh hình, mức độ…"
+          class="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"></textarea>
+      </label>
+    </div>
+
+    <!-- footer -->
+    <div class="safe-bottom shrink-0 px-4 pt-3 border-t border-stone-100 bg-white">
+      <p id="hsSummary" class="text-xs text-stone-500 mb-2"></p>
+      <div class="flex gap-2">
+        <button type="button" id="hsCancel" class="flex-1 h-11 rounded-xl bg-stone-100 text-stone-700 font-semibold">Để sau</button>
+        <button type="submit" id="hsSave" class="flex-[2] h-11 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:bg-stone-300 text-white font-bold">Lưu & xem sân phù hợp</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  import { useMemberStore } from "../stores/memberStore";
+  import { affectedGroups } from "../lib/recommend";
+
+  const dialog = document.getElementById("healthModal") as HTMLDialogElement;
+  const form = document.getElementById("healthForm") as HTMLFormElement;
+  const none = document.getElementById("hsNone") as HTMLInputElement;
+  const notes = document.getElementById("hsNotes") as HTMLTextAreaElement;
+  const boxes = [...form.querySelectorAll<HTMLInputElement>("input[name=condition]")];
+  const $ = (id: string) => document.getElementById(id)!;
+  let childId: string | null = null;
+  let required = false;
+
+  const selected = () => boxes.filter((b) => b.checked).map((b) => b.value);
+
+  function refresh() {
+    const ids = selected();
+    document.querySelectorAll<HTMLElement>(".hs-count").forEach((el) => {
+      const n = boxes.filter((b) => b.checked && b.dataset.group === el.dataset.group).length;
+      el.textContent = String(n);
+      el.classList.toggle("hidden", n === 0);
+    });
+    const groups = affectedGroups(ids);
+    $("hsSummary").textContent = ids.length
+      ? `Đã chọn ${ids.length} dấu hiệu · ảnh hưởng: ${groups.map((g) => g.icon + " " + g.short).join(", ")}`
+      : none.checked
+        ? "Bé không có dấu hiệu bất thường."
+        : "Hãy tích dấu hiệu, hoặc chọn “Bé không có dấu hiệu nào ở trên”.";
+    ($("hsSave") as HTMLButtonElement).disabled = !ids.length && !none.checked;
+  }
+
+  boxes.forEach((b) =>
+    b.addEventListener("change", () => {
+      if (b.checked) none.checked = false;
+      refresh();
+    }),
+  );
+  none.addEventListener("change", () => {
+    if (none.checked) boxes.forEach((b) => (b.checked = false));
+    refresh();
+  });
+
+  window.addEventListener("cham:health-modal", (e) => {
+    const detail = (e as CustomEvent<{ id?: string; required?: boolean }>).detail ?? {};
+    const child = useMemberStore.getState().children.find((c) => c.id === (detail.id ?? useMemberStore.activeChild()?.id));
+    if (!child) return;
+    childId = child.id;
+    required = !!detail.required;
+    const hs = child.health_screening;
+    boxes.forEach((b) => (b.checked = hs.selected_condition_ids.includes(b.value)));
+    none.checked = hs.screened && hs.selected_condition_ids.length === 0;
+    notes.value = hs.notes;
+    $("hsName").textContent = `· ${child.animal} ${child.nickname}`;
+    $("hsStep").textContent = required ? "Bước 2/2 · bắt buộc để hoàn thiện hồ sơ" : "Hồ sơ thể trạng";
+    $("hsClose").hidden = required;
+    $("hsCancel").hidden = required;
+    // open the groups that already have selections (plus the first one)
+    form.querySelectorAll<HTMLDetailsElement>(".hs-group").forEach((d, i) => {
+      d.open = i === 0 || !!d.querySelector("input:checked");
+    });
+    refresh();
+    dialog.showModal();
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!childId || (!selected().length && !none.checked)) return;
+    useMemberStore.updateChildHealth(childId, selected(), notes.value.trim());
+    dialog.close();
+  });
+
+  // in required mode the only way out is saving
+  dialog.addEventListener("cancel", (e) => required && e.preventDefault());
+  dialog.addEventListener("click", (e) => {
+    const t = e.target as HTMLElement;
+    if (required) return;
+    if (t === dialog || t.id === "hsClose" || t.id === "hsCancel") dialog.close();
+  });
+</script>

@@ -1,0 +1,9 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ReferenceHub from "../components/ReferenceHub";
+---
+
+<Layout title="Thư viện tham chiếu · Playground Hà Nội">
+  <!-- client:only — the hub reads the child's profile from localStorage, which the server can't see -->
+  <ReferenceHub client:only="react" />
+</Layout>
