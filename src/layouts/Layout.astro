@@ -21,3 +21,8 @@ const { title = "Playground Hà Nội" } = Astro.props;
     <slot />
   </body>
 </html>
+
+<script>
+  // optional accounts: mirrors memberStore to Supabase while signed in
+  import "../lib/cloud";
+</script>

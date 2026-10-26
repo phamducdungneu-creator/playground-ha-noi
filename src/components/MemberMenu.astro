@@ -15,9 +15,20 @@
 
   <div id="memberPanel" role="menu" hidden
     class="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-xl border border-stone-100 overflow-hidden origin-top-right">
-    <div class="px-4 py-3 bg-gradient-to-br from-amber-50 to-emerald-50 border-b border-stone-100">
-      <p id="parentName" class="text-sm font-bold text-stone-800"></p>
-      <p id="parentEmail" class="text-xs text-stone-500"></p>
+    <div class="px-4 py-3 bg-gradient-to-br from-amber-50 to-emerald-50 border-b border-stone-100 space-y-2">
+      <div>
+        <p id="parentName" class="text-sm font-bold text-stone-800 truncate"></p>
+        <p id="parentEmail" class="text-xs text-stone-500 truncate"></p>
+        <p id="syncState" class="text-[11px] font-semibold"></p>
+      </div>
+      <a id="signInLink" href={`${import.meta.env.BASE_URL}dang-nhap`}
+        class="flex items-center justify-center h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold">🔐 Đăng nhập / Đăng ký</a>
+      <div id="accountActions" hidden class="flex gap-1.5">
+        <a id="adminLink" hidden href={`${import.meta.env.BASE_URL}admin`}
+          class="flex-1 flex items-center justify-center h-9 rounded-xl bg-stone-800 hover:bg-stone-900 text-white text-xs font-semibold">🛡️ Quản trị</a>
+        <button id="signOutBtn" type="button"
+          class="flex-1 h-9 rounded-xl bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 text-xs font-semibold">Đăng xuất</button>
+      </div>
     </div>
     <p class="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400">Hồ sơ các bé</p>
     <ul id="childList" class="px-2 pb-2 max-h-64 overflow-y-auto"></ul>
@@ -36,6 +47,15 @@
 
 <script>
   import { useMemberStore, ageOf, ageGroupOf } from "../stores/memberStore";
+  import { onSyncStatus, signOut, type SyncStatus } from "../lib/cloud";
+
+  const SYNC_LABEL: Record<SyncStatus, [string, string]> = {
+    guest: ["", ""],
+    syncing: ["☁️ Đang đồng bộ…", "text-stone-500"],
+    synced: ["☁️ Đã lưu vào tài khoản", "text-emerald-700"],
+    offline: ["📴 Mất mạng · sẽ đồng bộ khi có mạng lại", "text-amber-700"],
+    error: ["⚠️ Chưa đồng bộ được, sẽ thử lại", "text-rose-700"],
+  };
 
   const $ = (id: string) => document.getElementById(id)!;
   const btn = $("memberBtn");
@@ -69,10 +89,28 @@
     setOpen(false);
   });
 
+  onSyncStatus((st) => {
+    const [text, cls] = SYNC_LABEL[st];
+    $("syncState").textContent = text;
+    $("syncState").className = `text-[11px] font-semibold ${cls}`;
+  });
+  const signOutBtn = $("signOutBtn") as HTMLButtonElement;
+  signOutBtn.addEventListener("click", async () => {
+    signOutBtn.disabled = true;
+    await signOut();
+    signOutBtn.disabled = false;
+    setOpen(false);
+  });
+
   useMemberStore.subscribe((s) => {
     const active = useMemberStore.activeChild();
     $("parentName").textContent = s.user ? `👋 ${s.user.name}` : "Khách";
-    $("parentEmail").textContent = s.user ? `${s.user.email} · thành viên` : "Dữ liệu chỉ lưu trên thiết bị này";
+    $("parentEmail").textContent = s.user
+      ? `${s.user.email} · ${s.user.role === "admin" ? "quản trị viên" : "thành viên"}`
+      : "Dữ liệu chỉ lưu trên thiết bị này";
+    $("signInLink").hidden = !!s.user;
+    $("accountActions").hidden = !s.user;
+    $("adminLink").hidden = s.user?.role !== "admin";
     $("memberAvatar").textContent = active?.animal ?? "➕";
     $("memberName").textContent = active?.nickname ?? "Thêm bé";
     $("memberAge").textContent = active ? `${ageOf(active)} tuổi` : "";

@@ -1,0 +1,74 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const base = import.meta.env.BASE_URL;
+const updated = "26/10/2026";
+---
+
+<Layout title="Quyền riêng tư · Playground Hà Nội">
+  <main class="safe-top safe-bottom px-4 max-w-2xl mx-auto space-y-4">
+    <header class="flex items-center gap-3">
+      <a href={base} aria-label="Về bảng vận động"
+        class="w-10 h-10 shrink-0 rounded-xl bg-white border border-stone-200 grid place-items-center text-stone-600 hover:bg-stone-100">←</a>
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Playground Hà Nội</p>
+        <h1 class="text-xl font-extrabold text-stone-800">Chính sách quyền riêng tư</h1>
+      </div>
+    </header>
+
+    <article class="bg-white rounded-3xl border border-stone-200 shadow-sm p-5 space-y-5 text-sm leading-relaxed text-stone-700
+      [&_h2]:text-base [&_h2]:font-extrabold [&_h2]:text-stone-800 [&_h2]:mb-1.5 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1">
+      <p class="text-xs text-stone-500">Cập nhật lần cuối: {updated}</p>
+
+      <section>
+        <h2>1. Hai cách sử dụng</h2>
+        <ul>
+          <li><b>Không đăng ký:</b> mọi thông tin bạn nhập chỉ lưu trong trình duyệt trên thiết bị của bạn. Chúng tôi không nhận, không xem và không lưu bất kỳ dữ liệu nào của bạn.</li>
+          <li><b>Có tài khoản (tuỳ chọn):</b> thông tin được lưu thêm lên máy chủ để bạn dùng trên nhiều thiết bị. Phần dưới đây áp dụng cho trường hợp này.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>2. Dữ liệu chúng tôi lưu khi bạn có tài khoản</h2>
+        <ul>
+          <li>Của cha mẹ: email, tên hiển thị, thời điểm đăng ký và thời điểm đồng ý chính sách này. Mật khẩu được mã hoá, chúng tôi không đọc được.</li>
+          <li>Của trẻ (do cha mẹ nhập): tên gọi, năm sinh, giới tính, chiều cao, cân nặng, kết quả sàng lọc cơ – xương – khớp, nhật ký thời gian ngoài trời, thời gian màn hình và thử thách vận động.</li>
+        </ul>
+        <p class="mt-1.5">Thông tin sức khoẻ của trẻ là <b>dữ liệu cá nhân nhạy cảm</b> theo Nghị định 13/2023/NĐ-CP. Chúng tôi chỉ lưu khi cha mẹ hoặc người giám hộ đồng ý lúc đăng ký.</p>
+      </section>
+
+      <section>
+        <h2>3. Mục đích sử dụng</h2>
+        <ul>
+          <li>Hiển thị bảng vận động, gợi ý sân chơi và tài liệu tham khảo phù hợp với con bạn.</li>
+          <li>Đồng bộ dữ liệu giữa các thiết bị bạn đăng nhập.</li>
+          <li>Thống kê tổng hợp, không định danh (ví dụ số trẻ theo nhóm tuổi) để cải thiện nội dung.</li>
+        </ul>
+        <p class="mt-1.5">Chúng tôi <b>không bán</b>, không cho thuê và không chia sẻ dữ liệu của bạn cho bên thứ ba vì mục đích quảng cáo.</p>
+      </section>
+
+      <section>
+        <h2>4. Nơi lưu trữ và ai được truy cập</h2>
+        <ul>
+          <li>Dữ liệu được lưu trên hạ tầng của nhà cung cấp Supabase, có mã hoá khi truyền tải (HTTPS).</li>
+          <li>Mỗi tài khoản chỉ đọc và sửa được dữ liệu của chính mình.</li>
+          <li>Quản trị viên của Playground Hà Nội có thể xem dữ liệu để hỗ trợ người dùng và vận hành dịch vụ.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>5. Quyền của bạn</h2>
+        <ul>
+          <li>Xem và sửa thông tin của con bất cứ lúc nào ngay trên website.</li>
+          <li>Tự xoá toàn bộ dữ liệu trên máy chủ tại trang <a href={`${base}dang-nhap`} class="text-emerald-700 underline">Tài khoản</a> → “Xoá toàn bộ dữ liệu của tôi trên máy chủ”.</li>
+          <li>Rút lại sự đồng ý, hoặc yêu cầu xoá hẳn tài khoản: liên hệ quản trị viên website.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>6. Nội dung sức khoẻ</h2>
+        <p>Các bài sàng lọc, phân nhóm và tài liệu tham khảo chỉ mang tính thông tin, <b>không thay thế</b> chẩn đoán hay điều trị của bác sĩ.</p>
+      </section>
+    </article>
+  </main>
+</Layout>

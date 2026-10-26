@@ -52,13 +52,19 @@ export type ChildProfile = Child;
 const EMPTY_SCREENING: HealthScreening = { screened: false, selected_condition_ids: [], notes: "" };
 const EMPTY_BODY = { msk_checklist: {}, sex: null, height_cm: null, weight_kg: null } satisfies Partial<Child>;
 
-export type Parent = { name: string; email: string; role: "member" };
+/** Signed-in account (src/lib/cloud.ts); null while the family uses the site as a guest. */
+export type Parent = { id: string; name: string; email: string; role: "member" | "admin" };
 
 export type MemberState = {
   user: Parent | null;
   children: Child[];
   activeChildId: string | null;
+  /** epoch ms of the last local edit; cloud sync keeps whichever copy is newer */
+  updated_at?: number;
 };
+
+/** The part of the state that belongs to the family (and is synced), as opposed to the session. */
+export type FamilyData = Pick<MemberState, "children" | "activeChildId">;
 
 export const ANIMALS = ["🐻", "🐰", "🦊", "🐼", "🐯", "🐸", "🦁", "🐨", "🐥", "🐬"];
 
@@ -89,24 +95,29 @@ export function ageGroupOf(age: number): AgeGroup {
   return "7-10";
 }
 
+/** Fills defaults for fields added after a profile was saved (locally or in the cloud). */
+export function normalizeChildren(children: Child[]): Child[] {
+  return children.map((c) => ({
+    ...c,
+    health_screening: { ...EMPTY_SCREENING, ...c.health_screening },
+    daily_log: c.daily_log ?? {},
+    timer_start: c.timer_start ?? null,
+    msk_checklist: c.msk_checklist ?? {},
+    sex: c.sex ?? null,
+    height_cm: c.height_cm ?? null,
+    weight_kg: c.weight_kg ?? null,
+  }));
+}
+
 function load(): MemberState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const s = JSON.parse(raw) as MemberState;
       if (Array.isArray(s.children)) {
-        // profiles saved before health screening / the daily log existed get empty defaults
-        const children = s.children.map((c) => ({
-          ...c,
-          health_screening: { ...EMPTY_SCREENING, ...c.health_screening },
-          daily_log: c.daily_log ?? {},
-          timer_start: c.timer_start ?? null,
-          msk_checklist: c.msk_checklist ?? {},
-          sex: c.sex ?? null,
-          height_cm: c.height_cm ?? null,
-          weight_kg: c.weight_kg ?? null,
-        }));
-        return { ...s, children, user: s.user ?? null };
+        // older saves carried a demo parent without an id: treat them as guests
+        const user = s.user && "id" in s.user ? s.user : null;
+        return { ...s, children: normalizeChildren(s.children), user };
       }
     }
   } catch {
@@ -118,8 +129,9 @@ function load(): MemberState {
 let state: MemberState = typeof window === "undefined" ? seed() : load();
 const listeners = new Set<(s: MemberState) => void>();
 
-function set(next: MemberState) {
-  state = next;
+/** `stamp: false` keeps next.updated_at (used when applying a copy from the cloud). */
+function set(next: MemberState, stamp = true) {
+  state = stamp ? { ...next, updated_at: Date.now() } : next;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
@@ -138,6 +150,21 @@ export const useMemberStore = {
     listeners.add(fn);
     fn(state);
     return () => listeners.delete(fn);
+  },
+
+  /** Swaps in another family's data (cloud copy, guest backup, empty) without marking it as a local edit. */
+  replaceFamily(data: FamilyData, updated_at = 0, user: Parent | null = state.user) {
+    const children = normalizeChildren(data.children ?? []);
+    const activeChildId = children.some((c) => c.id === data.activeChildId) ? data.activeChildId : children[0]?.id ?? null;
+    set({ user, children, activeChildId, updated_at }, false);
+  },
+
+  setUser(user: Parent | null) {
+    set({ ...state, user }, false);
+  },
+
+  family(): FamilyData {
+    return { children: state.children, activeChildId: state.activeChildId };
   },
 
   activeChild(): Child | null {

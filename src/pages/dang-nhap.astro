@@ -1,0 +1,229 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const base = import.meta.env.BASE_URL;
+const input =
+  "w-full h-11 rounded-xl border border-stone-200 px-3 bg-white outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100";
+---
+
+<Layout title="Đăng nhập · Playground Hà Nội">
+  <main class="safe-top safe-bottom px-4 max-w-md mx-auto space-y-4">
+    <header class="flex items-center gap-3">
+      <a href={base} aria-label="Về bảng vận động"
+        class="w-10 h-10 shrink-0 rounded-xl bg-white border border-stone-200 grid place-items-center text-stone-600 hover:bg-stone-100">←</a>
+      <div>
+        <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Playground Hà Nội</p>
+        <h1 class="text-xl font-extrabold text-stone-800">Tài khoản</h1>
+      </div>
+    </header>
+
+    <!-- signed in already -->
+    <section id="signedIn" hidden class="bg-white rounded-3xl border border-stone-200 shadow-sm p-5 space-y-3 text-center">
+      <p class="text-4xl">✅</p>
+      <p class="text-sm text-stone-600">Bạn đang đăng nhập với</p>
+      <p id="signedEmail" class="font-bold text-stone-800 break-all"></p>
+      <p id="signedSync" class="text-xs text-stone-500"></p>
+      <div class="grid gap-2">
+        <a href={base} class="h-11 grid place-items-center rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold">Về bảng vận động</a>
+        <button id="signOut" type="button" class="h-11 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold">Đăng xuất</button>
+      </div>
+      <button id="deleteData" type="button" class="text-xs text-rose-700 underline">Xoá toàn bộ dữ liệu của tôi trên máy chủ</button>
+    </section>
+
+    <!-- new password after following a reset link -->
+    <form id="recoverForm" hidden class="bg-white rounded-3xl border border-stone-200 shadow-sm p-5 space-y-3">
+      <h2 class="font-extrabold text-stone-800">Đặt mật khẩu mới</h2>
+      <label class="block space-y-1">
+        <span class="text-sm font-semibold text-stone-700">Mật khẩu mới</span>
+        <input name="password" type="password" required minlength="8" autocomplete="new-password" class={input} />
+      </label>
+      <button type="submit" class="w-full h-11 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold disabled:opacity-50">Lưu mật khẩu</button>
+    </form>
+
+    <section id="authBox" class="space-y-4">
+      <div class="rounded-2xl bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-900">
+        <b>Đăng ký là tuỳ chọn.</b> Bạn vẫn dùng đầy đủ website mà không cần tài khoản. Tài khoản giúp
+        lưu dữ liệu lên máy chủ, xem trên nhiều thiết bị và không mất khi xoá trình duyệt.
+      </div>
+
+      <div role="tablist" class="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-stone-200/60">
+        <button type="button" role="tab" data-tab="in" aria-selected="true"
+          class="h-10 rounded-xl text-sm font-bold aria-selected:bg-white aria-selected:shadow-sm text-stone-700">Đăng nhập</button>
+        <button type="button" role="tab" data-tab="up" aria-selected="false"
+          class="h-10 rounded-xl text-sm font-bold aria-selected:bg-white aria-selected:shadow-sm text-stone-700">Đăng ký</button>
+      </div>
+
+      <form id="inForm" class="bg-white rounded-3xl border border-stone-200 shadow-sm p-5 space-y-3">
+        <label class="block space-y-1">
+          <span class="text-sm font-semibold text-stone-700">Email</span>
+          <input name="email" type="email" required autocomplete="email" class={input} />
+        </label>
+        <label class="block space-y-1">
+          <span class="text-sm font-semibold text-stone-700">Mật khẩu</span>
+          <input name="password" type="password" required autocomplete="current-password" class={input} />
+        </label>
+        <button type="submit" class="w-full h-11 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold disabled:opacity-50">Đăng nhập</button>
+        <button id="forgot" type="button" class="block mx-auto text-xs text-stone-500 underline">Quên mật khẩu?</button>
+      </form>
+
+      <form id="upForm" hidden class="bg-white rounded-3xl border border-stone-200 shadow-sm p-5 space-y-3">
+        <label class="block space-y-1">
+          <span class="text-sm font-semibold text-stone-700">Tên hiển thị</span>
+          <input name="name" type="text" required maxlength="40" autocomplete="name" placeholder="VD: Mẹ Bin" class={input} />
+        </label>
+        <label class="block space-y-1">
+          <span class="text-sm font-semibold text-stone-700">Email</span>
+          <input name="email" type="email" required autocomplete="email" class={input} />
+        </label>
+        <label class="block space-y-1">
+          <span class="text-sm font-semibold text-stone-700">Mật khẩu <span class="font-normal text-stone-500">(ít nhất 8 ký tự)</span></span>
+          <input name="password" type="password" required minlength="8" autocomplete="new-password" class={input} />
+        </label>
+        <label class="flex gap-2 items-start text-xs text-stone-600">
+          <input name="consent" type="checkbox" required class="mt-0.5 w-4 h-4 accent-emerald-600" />
+          <span>Tôi là cha mẹ / người giám hộ và đồng ý để Playground Hà Nội lưu thông tin của con tôi theo
+            <a href={`${base}quyen-rieng-tu`} target="_blank" class="text-emerald-700 underline">Chính sách quyền riêng tư</a>.</span>
+        </label>
+        <button type="submit" class="w-full h-11 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold disabled:opacity-50">Tạo tài khoản</button>
+      </form>
+    </section>
+
+    <p id="msg" hidden role="status" class="rounded-2xl px-4 py-3 text-sm"></p>
+  </main>
+</Layout>
+
+<script>
+  import { deleteCloudData, onSyncStatus, signOut, supabase } from "../lib/cloud";
+  import { useMemberStore } from "../stores/memberStore";
+
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+  const home = import.meta.env.BASE_URL;
+  const backHere = `${location.origin}${home}dang-nhap`;
+
+  const ERRORS: [RegExp, string][] = [
+    [/invalid login credentials/i, "Email hoặc mật khẩu không đúng."],
+    [/email not confirmed/i, "Email chưa được xác nhận. Hãy mở thư xác nhận trong hộp thư của bạn."],
+    [/already registered|already been registered/i, "Email này đã có tài khoản. Hãy chuyển sang Đăng nhập."],
+    [/password should be at least|weak password/i, "Mật khẩu quá ngắn hoặc quá dễ đoán."],
+    [/rate limit|too many/i, "Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút."],
+    [/invalid email|unable to validate email/i, "Email không hợp lệ."],
+  ];
+  const vi = (m: string) => ERRORS.find(([re]) => re.test(m))?.[1] ?? `Có lỗi xảy ra: ${m}`;
+
+  function say(text: string, tone: "ok" | "err" | "info" = "info") {
+    const el = $("msg");
+    el.textContent = text;
+    el.className = `rounded-2xl px-4 py-3 text-sm ${
+      tone === "ok" ? "bg-emerald-50 text-emerald-900 border border-emerald-200"
+      : tone === "err" ? "bg-rose-50 text-rose-800 border border-rose-200"
+      : "bg-stone-100 text-stone-700"}`;
+    el.hidden = false;
+  }
+
+  // ---------- tabs ----------
+  document.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach((b) =>
+    b.addEventListener("click", () => {
+      document.querySelectorAll("[data-tab]").forEach((x) => x.setAttribute("aria-selected", String(x === b)));
+      $("inForm").hidden = b.dataset.tab !== "in";
+      $("upForm").hidden = b.dataset.tab !== "up";
+      $("msg").hidden = true;
+    }),
+  );
+
+  // ---------- after a successful sign-in, wait for the sync (and the merge question) then go home ----------
+  let leaving = false;
+  function goHomeWhenSynced() {
+    leaving = true;
+    say("Đang đồng bộ dữ liệu…");
+    onSyncStatus((s) => {
+      if (leaving && s !== "syncing" && s !== "guest") location.href = home;
+    });
+  }
+  // arrived from the confirmation email: supabase-js picks the session up from the URL
+  if (/type=(signup|magiclink|invite)/.test(location.hash)) goHomeWhenSynced();
+
+  // ---------- password reset link: read the URL before supabase-js cleans it up ----------
+  function showRecovery() {
+    $("recoverForm").hidden = false;
+    $("authBox").hidden = true;
+    $("signedIn").hidden = true;
+  }
+  if (/type=recovery/.test(location.hash)) showRecovery();
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") showRecovery();
+  });
+
+  // ---------- page state follows the account ----------
+  useMemberStore.subscribe((s) => {
+    $("signedIn").hidden = !s.user || !$("recoverForm").hidden;
+    $("authBox").hidden = !!s.user || !$("recoverForm").hidden;
+    if (s.user) $("signedEmail").textContent = s.user.email;
+  });
+  onSyncStatus((s) => ($("signedSync").textContent = s === "synced" ? "☁️ Dữ liệu đã được lưu vào tài khoản" : s === "syncing" ? "☁️ Đang đồng bộ…" : ""));
+
+  // ---------- forms ----------
+  const busy = (f: HTMLFormElement, on: boolean) => f.querySelectorAll("button").forEach((b) => (b.disabled = on));
+
+  $<HTMLFormElement>("inForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = e.currentTarget as HTMLFormElement;
+    const d = new FormData(f);
+    busy(f, true);
+    const { error } = await supabase.auth.signInWithPassword({ email: String(d.get("email")).trim(), password: String(d.get("password")) });
+    busy(f, false);
+    if (error) return say(vi(error.message), "err");
+    goHomeWhenSynced();
+  });
+
+  $<HTMLFormElement>("upForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = e.currentTarget as HTMLFormElement;
+    const d = new FormData(f);
+    busy(f, true);
+    const { data, error } = await supabase.auth.signUp({
+      email: String(d.get("email")).trim(),
+      password: String(d.get("password")),
+      options: {
+        emailRedirectTo: backHere,
+        data: { display_name: String(d.get("name")).trim(), consent: d.get("consent") === "on" },
+      },
+    });
+    busy(f, false);
+    if (error) return say(vi(error.message), "err");
+    // Supabase answers a repeated sign-up with an empty identity list instead of an error
+    if (data.user && !data.user.identities?.length) return say(vi("already registered"), "err");
+    if (data.session) return goHomeWhenSynced();
+    f.reset();
+    say("Đã tạo tài khoản! Hãy mở email vừa được gửi tới bạn và bấm vào link xác nhận để hoàn tất.", "ok");
+  });
+
+  $("forgot").addEventListener("click", async () => {
+    const email = ($("inForm").querySelector("[name=email]") as HTMLInputElement).value.trim();
+    if (!email) return say("Nhập email của bạn vào ô Email trước, rồi bấm lại “Quên mật khẩu?”.", "err");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: backHere });
+    say(error ? vi(error.message) : "Nếu email này có tài khoản, bạn sẽ nhận được link đặt lại mật khẩu trong vài phút.", error ? "err" : "ok");
+  });
+
+  $<HTMLFormElement>("recoverForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = e.currentTarget as HTMLFormElement;
+    busy(f, true);
+    const { error } = await supabase.auth.updateUser({ password: String(new FormData(f).get("password")) });
+    busy(f, false);
+    if (error) return say(vi(error.message), "err");
+    f.hidden = true;
+    say("Đã đổi mật khẩu.", "ok");
+    goHomeWhenSynced();
+  });
+
+  $("deleteData").addEventListener("click", async () => {
+    if (!confirm("Xoá vĩnh viễn mọi hồ sơ bé và nhật ký của tài khoản này trên máy chủ? Không thể hoàn tác.")) return;
+    const err = await deleteCloudData();
+    say(err ? vi(err) : "Đã xoá dữ liệu trên máy chủ và đăng xuất. Muốn xoá hẳn tài khoản (email), hãy liên hệ quản trị viên.", err ? "err" : "ok");
+  });
+
+  $("signOut").addEventListener("click", async () => {
+    await signOut();
+    say("Đã đăng xuất. Dữ liệu tài khoản đã được xoá khỏi máy này.", "ok");
+  });
+</script>
