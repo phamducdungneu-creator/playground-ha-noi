@@ -553,7 +553,7 @@ export default function SegmentationStudio() {
     <div className="min-h-dvh bg-stone-50 text-stone-800">
       <header className="safe-top sticky top-0 z-10 bg-stone-50/90 backdrop-blur border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-4 pb-3 flex items-center gap-3">
-          <a href="/" className="w-10 h-10 shrink-0 rounded-xl bg-white border border-stone-200 grid place-items-center text-stone-600 hover:bg-stone-100" aria-label="Về bảng vận động">
+          <a href={import.meta.env.BASE_URL} className="w-10 h-10 shrink-0 rounded-xl bg-white border border-stone-200 grid place-items-center text-stone-600 hover:bg-stone-100" aria-label="Về bảng vận động">
             <ArrowLeft className="w-5 h-5" />
           </a>
           <div className="min-w-0">

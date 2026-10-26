@@ -427,7 +427,7 @@ export default function ReferenceHub({ selectedChildProfile }: { selectedChildPr
       <header className="safe-top sticky top-0 z-20 bg-stone-50/90 backdrop-blur border-b border-stone-200">
         <div className="max-w-3xl mx-auto px-4">
           <div className="flex items-center gap-3 pb-2">
-            <a href="/" aria-label="Về bảng vận động" className="w-10 h-10 shrink-0 rounded-xl bg-white border border-stone-200 grid place-items-center text-stone-600 hover:bg-stone-100">
+            <a href={import.meta.env.BASE_URL} aria-label="Về bảng vận động" className="w-10 h-10 shrink-0 rounded-xl bg-white border border-stone-200 grid place-items-center text-stone-600 hover:bg-stone-100">
               <ArrowLeft className="w-5 h-5" />
             </a>
             <div className="min-w-0">
@@ -454,7 +454,7 @@ export default function ReferenceHub({ selectedChildProfile }: { selectedChildPr
         {tab === "personal" && (
           !profile || !r || !tier ? (
             <p className="rounded-2xl bg-white border border-stone-200 p-6 text-center text-sm text-stone-500">
-              Chưa có hồ sơ bé. <a href="/" className="text-emerald-700 font-semibold underline">Thêm hồ sơ</a> để nhận tham chiếu dành riêng.
+              Chưa có hồ sơ bé. <a href={import.meta.env.BASE_URL} className="text-emerald-700 font-semibold underline">Thêm hồ sơ</a> để nhận tham chiếu dành riêng.
             </p>
           ) : (
             <>
@@ -544,7 +544,7 @@ export default function ReferenceHub({ selectedChildProfile }: { selectedChildPr
             />
           ) : (
             <p className="rounded-2xl bg-white border border-stone-200 p-6 text-center text-sm text-stone-500">
-              Chưa có hồ sơ bé. <a href="/" className="text-emerald-700 font-semibold underline">Thêm hồ sơ</a> để làm test nhanh theo độ tuổi.
+              Chưa có hồ sơ bé. <a href={import.meta.env.BASE_URL} className="text-emerald-700 font-semibold underline">Thêm hồ sơ</a> để làm test nhanh theo độ tuổi.
             </p>
           )
         )}
