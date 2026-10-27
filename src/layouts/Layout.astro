@@ -13,8 +13,13 @@ interface Props {
 }
 const { title = SITE_NAME, description = SITE_DESCRIPTION, noindex = false, ogType = "website", jsonLd } = Astro.props;
 
-// build.format "file" writes /bai-viet/x.html but serves it as /bai-viet/x
-const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/index$/, "/");
+// build.format "preserve": x.astro is served as /x, x/index.astro as /x/ — Astro.url may carry
+// either form, so rebuild the trailing slash from which pages are folder indexes.
+const folderIndexes = new Set(
+  Object.keys(import.meta.glob("/src/pages/**/index.astro")).map((f) => f.replace(/^\/src\/pages\/|index\.astro$/g, "").replace(/\/$/, "")),
+);
+const route = Astro.url.pathname.slice(import.meta.env.BASE_URL.length).replace(/\.html$/, "").replace(/(^|\/)index$/, "").replace(/\/$/, "");
+const path = `${import.meta.env.BASE_URL}${route}${route && folderIndexes.has(route) ? "/" : ""}`;
 const canonical = new URL(path, SITE_ORIGIN).href;
 const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 ---

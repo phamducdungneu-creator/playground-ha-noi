@@ -32,8 +32,8 @@ jobs:
       - name: Build site
         run: npm run build
         env:
-          # project pages live under https://<user>.github.io/<repo>/
-          BASE_PATH: /${{ github.event.repository.name }}/
+          # served at the root of the custom domain playground.com.vn
+          BASE_PATH: /
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

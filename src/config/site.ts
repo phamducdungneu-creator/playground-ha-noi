@@ -2,8 +2,6 @@
  * One place for everything search engines see about the site.
  *
  * The domain comes from `site` in astro.config.mjs; the path from BASE_PATH.
- * If you move to your own domain (recommended for Google — robots.txt only works at a
- * domain root), change `site` there and set BASE_PATH to "/" in the deploy workflow.
  */
 export const SITE_ORIGIN = import.meta.env.SITE;
 

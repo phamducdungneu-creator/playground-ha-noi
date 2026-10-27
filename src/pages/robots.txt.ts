@@ -1,6 +1,4 @@
-// robots.txt — note: crawlers only read it at the domain root, so on GitHub Pages
-// (site under /playground-ha-noi/) it takes effect only after moving to an own domain.
-// Until then, pages opt out with <meta name="robots" content="noindex">.
+// robots.txt — crawlers only read it at the domain root (fine on playground.com.vn).
 import type { APIRoute } from "astro";
 import { absUrl } from "../config/site";
 
