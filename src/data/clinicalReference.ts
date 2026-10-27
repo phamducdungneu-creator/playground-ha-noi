@@ -13,6 +13,7 @@
  */
 import { MSK_CONDITIONS, type ClusterId, type MskCondition } from "../components/SegmentationStudio";
 import { VISUAL_GUIDES, type VisualGuide } from "./visualGuides";
+import { slugify } from "../lib/slug";
 
 export type Nature = "PHYSIOLOGICAL_VARIANT" | "BIOMECHANICAL_SUPPORT" | "MEDICAL_EVALUATION";
 
@@ -25,6 +26,8 @@ export interface SourceCitation {
 /** normalState / riskState / testGuide come from VISUAL_GUIDES */
 export interface ReferenceArticle extends VisualGuide {
   id: string; // "MSK_01"
+  /** URL of the public article page: /bai-viet/<slug> */
+  slug: string;
   conditionId: number;
   clusterId: ClusterId;
   title: { vi: string; en: string };
@@ -65,7 +68,7 @@ const POSNA = (topic: string): SourceCitation => ({ org: "POSNA (OrthoKids)", to
 const AAP = (topic: string): SourceCitation => ({ org: "AAP (HealthyChildren)", topic, site: "healthychildren.org" });
 const APTA = (topic: string): SourceCitation => ({ org: "APTA Pediatrics", topic, site: "pediatricapta.org" });
 
-type Drafted = Omit<ReferenceArticle, "id" | "conditionId" | "clusterId" | "title" | "status" | keyof VisualGuide>;
+type Drafted = Omit<ReferenceArticle, "id" | "slug" | "conditionId" | "clusterId" | "title" | "status" | keyof VisualGuide>;
 
 const DRAFTED: Record<number, Drafted> = {
   // ---------------- Cụm 1 ----------------
@@ -388,6 +391,7 @@ function skeleton(c: MskCondition): Drafted {
 
 export const clinicalReferenceDatabase: ReferenceArticle[] = MSK_CONDITIONS.map((c) => ({
   id: `MSK_${pad(c.id)}`,
+  slug: slugify(c.nameVi),
   conditionId: c.id,
   clusterId: c.cluster,
   title: { vi: c.nameVi, en: c.term },

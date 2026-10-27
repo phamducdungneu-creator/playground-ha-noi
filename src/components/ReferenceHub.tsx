@@ -197,7 +197,10 @@ function ArticleDrawer({ article, profile, physiological, onClose }: { article: 
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="mt-2"><NaturePill nature={cs.nature} /></div>
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <NaturePill nature={cs.nature} />
+            <a href={`${import.meta.env.BASE_URL}bai-viet/${article.slug}`} className="text-xs font-semibold text-emerald-700 underline">Trang bài viết · chia sẻ</a>
+          </div>
         </header>
 
         <div className="p-4 space-y-3 safe-bottom">

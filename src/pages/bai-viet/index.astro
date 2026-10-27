@@ -1,0 +1,59 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import { CLUSTERS } from "../../components/SegmentationStudio";
+import { clinicalReferenceDatabase } from "../../data/clinicalReference";
+import { SITE_NAME, absUrl } from "../../config/site";
+import { breadcrumbLd } from "../../lib/seo";
+
+const base = import.meta.env.BASE_URL;
+const title = "Cẩm nang cơ – xương – khớp cho trẻ 1–10 tuổi";
+const description =
+  "32 vấn đề cơ – xương – khớp thường gặp ở trẻ em: bàn chân bẹt, chân chữ X, chân chữ O, đi nhón gót, gù lưng… Khi nào là bình thường theo tuổi, cách kiểm tra tại nhà và khi nào cần đi khám.";
+const crumbs = [{ name: "Trang chủ", href: "" }];
+const drafted = clinicalReferenceDatabase.filter((a) => a.status === "drafted");
+const jsonLd = [
+  {
+    "@type": "CollectionPage",
+    name: title,
+    description,
+    url: absUrl("bai-viet/"),
+    inLanguage: "vi",
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: drafted.map((a, i) => ({ "@type": "ListItem", position: i + 1, url: absUrl(`bai-viet/${a.slug}`), name: a.title.vi })),
+    },
+  },
+  breadcrumbLd(crumbs, { name: "Cẩm nang", href: "bai-viet/" }),
+];
+---
+
+<Layout title={`${title} · ${SITE_NAME}`} description={description} jsonLd={jsonLd}>
+  <main class="safe-top px-4 max-w-2xl mx-auto space-y-5">
+    <PageHeader title={title} crumbs={crumbs} />
+    <p class="text-sm text-stone-600 leading-relaxed">
+      Nhiều dáng chân, dáng đi khiến cha mẹ lo lắng thực ra là giai đoạn bình thường khi trẻ lớn. Mỗi bài dưới đây giải thích
+      khi nào là sinh lý theo tuổi, cách tự kiểm tra tại nhà, nên cho bé chơi gì ở sân chơi và dấu hiệu nào cần đưa bé đi khám.
+    </p>
+
+    {CLUSTERS.map((c) => (
+      <section class="space-y-2" aria-labelledby={c.id}>
+        <h2 id={c.id} class="text-base font-extrabold text-stone-800">{c.label}</h2>
+        <ul class="grid sm:grid-cols-2 gap-2">
+          {clinicalReferenceDatabase.filter((a) => a.clusterId === c.id).map((a) => (
+            <li>
+              <a href={`${base}bai-viet/${a.slug}`} class="block h-full rounded-2xl bg-white border border-stone-200 px-4 py-3 hover:border-emerald-300">
+                <span class="block text-sm font-bold text-stone-800">{a.title.vi}</span>
+                <span class="block text-xs text-stone-500 mt-0.5">
+                  {a.status === "drafted" ? a.clinicalSummary.keyMessage : "Đang biên soạn"}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </main>
+  <SiteFooter />
+</Layout>

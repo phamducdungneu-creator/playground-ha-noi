@@ -1,0 +1,18 @@
+---
+// Plain links on every page so search engines (and people) can reach all public sections.
+const base = import.meta.env.BASE_URL;
+const links = [
+  { href: "", text: "Bảng vận động" },
+  { href: "bai-viet/", text: "Cẩm nang cơ – xương – khớp" },
+  { href: "san-choi/", text: "Sân chơi Hà Nội" },
+  { href: "gioi-thieu", text: "Giới thiệu" },
+  { href: "quyen-rieng-tu", text: "Quyền riêng tư" },
+];
+---
+
+<footer class="max-w-2xl mx-auto px-4 pt-6 pb-8 text-xs text-stone-500 space-y-2">
+  <nav aria-label="Liên kết chính" class="flex flex-wrap gap-x-4 gap-y-1.5">
+    {links.map((l) => <a href={`${base}${l.href}`} class="hover:text-emerald-700 hover:underline">{l.text}</a>)}
+  </nav>
+  <p>Nội dung chỉ mang tính thông tin, không thay thế chẩn đoán của bác sĩ. Dữ liệu bản đồ © OpenStreetMap contributors (ODbL).</p>
+</footer>

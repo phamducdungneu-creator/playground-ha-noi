@@ -1,0 +1,70 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import PlaceList from "../../components/PlaceList.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import { curatedPlaces, wards } from "../../data/placeDirectory";
+import { places } from "../../data/places";
+import { SITE_NAME, absUrl } from "../../config/site";
+import { breadcrumbLd } from "../../lib/seo";
+
+const base = import.meta.env.BASE_URL;
+const withPage = wards.filter((w) => w.hasPage);
+const small = wards.filter((w) => !w.hasPage);
+const title = "Sân chơi, công viên cho trẻ em ở Hà Nội theo phường, xã";
+const description = `Danh bạ ${places.length.toLocaleString("vi-VN")} sân chơi trẻ em, công viên, vườn hoa ở Hà Nội, chia theo ${wards.length} phường, xã — kèm chỉ đường và gợi ý trò vận động cho bé 1–10 tuổi.`;
+const crumbs = [{ name: "Trang chủ", href: "" }];
+const jsonLd = [
+  {
+    "@type": "CollectionPage",
+    name: title,
+    description,
+    url: absUrl("san-choi/"),
+    inLanguage: "vi",
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: withPage.map((w, i) => ({ "@type": "ListItem", position: i + 1, url: absUrl(`san-choi/${w.slug}`), name: w.name })),
+    },
+  },
+  breadcrumbLd(crumbs, { name: "Sân chơi Hà Nội", href: "san-choi/" }),
+];
+---
+
+<Layout title={`${title} · ${SITE_NAME}`} description={description} jsonLd={jsonLd}>
+  <main class="safe-top px-4 max-w-2xl mx-auto space-y-5">
+    <PageHeader title={title} crumbs={crumbs} />
+    <p class="text-sm text-stone-600 leading-relaxed">
+      Tổng hợp {places.length.toLocaleString("vi-VN")} điểm vui chơi ngoài trời ở Hà Nội từ dữ liệu OpenStreetMap và khảo sát của chúng tôi.
+      Chọn phường, xã để xem danh sách, chỉ đường và gợi ý trò vận động phù hợp độ tuổi của bé.
+    </p>
+
+    {curatedPlaces.length > 0 && (
+      <section class="space-y-2" aria-labelledby="featured">
+        <h2 id="featured" class="text-base font-extrabold text-stone-800">Địa điểm nổi bật</h2>
+        <PlaceList places={curatedPlaces} />
+      </section>
+    )}
+
+    <section class="space-y-2" aria-labelledby="areas">
+      <h2 id="areas" class="text-base font-extrabold text-stone-800">Theo phường, xã</h2>
+      <ul class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
+        {withPage.map((w) => (
+          <li>
+            <a href={`${base}san-choi/${w.slug}`} class="flex justify-between gap-2 rounded-xl bg-white border border-stone-200 px-3 py-2 hover:border-emerald-300">
+              <span class="font-semibold text-stone-700 truncate">{w.name}</span>
+              <span class="text-stone-400">{w.places.length}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    {small.length > 0 && (
+      <section class="space-y-2" aria-labelledby="small">
+        <h2 id="small" class="text-base font-extrabold text-stone-800">Khu vực khác</h2>
+        <PlaceList places={small.flatMap((w) => w.places)} />
+      </section>
+    )}
+  </main>
+  <SiteFooter />
+</Layout>

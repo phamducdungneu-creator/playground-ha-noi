@@ -3,7 +3,8 @@ import Layout from "../layouts/Layout.astro";
 import ReferenceHub from "../components/ReferenceHub";
 ---
 
-<Layout title="Thư viện tham chiếu · Playground Hà Nội">
+<!-- noindex: rendered only in the browser; the indexable copies of the articles are /bai-viet -->
+<Layout title="Thư viện tham chiếu · Playground Hà Nội" noindex>
   <!-- client:only — the hub reads the child's profile from localStorage, which the server can't see -->
   <ReferenceHub client:only="react" />
 </Layout>

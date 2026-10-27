@@ -1,0 +1,27 @@
+---
+// Header for the public content pages: back button, visible breadcrumb trail, H1.
+interface Props {
+  title: string;
+  /** trail above the title, last item = parent page; each href is relative to the site base */
+  crumbs: { name: string; href: string }[];
+}
+const { title, crumbs } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const parent = crumbs.at(-1)!;
+---
+
+<header class="flex items-start gap-3">
+  <a href={`${base}${parent.href}`} aria-label={`Về ${parent.name}`}
+    class="w-10 h-10 shrink-0 rounded-xl bg-white border border-stone-200 grid place-items-center text-stone-600 hover:bg-stone-100">←</a>
+  <div class="min-w-0">
+    <nav aria-label="Breadcrumb" class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+      {crumbs.map((c, i) => (
+        <>
+          {i > 0 && <span class="text-stone-400"> › </span>}
+          <a href={`${base}${c.href}`} class="hover:underline">{c.name}</a>
+        </>
+      ))}
+    </nav>
+    <h1 class="text-xl font-extrabold text-stone-800 leading-snug">{title}</h1>
+  </div>
+</header>

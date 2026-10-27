@@ -198,7 +198,7 @@ const clamp = (n: number) => Math.round(Math.min(100, Math.max(0, n)));
 // 4. Engine
 // ============================================================================
 
-const STAGES: { id: AgeStageId; max: number; label: string; range: string }[] = [
+export const STAGES: { id: AgeStageId; max: number; label: string; range: string }[] = [
   { id: "STAGE_A", max: 35, label: "Ấu nhi (Toddler)", range: "12–35 tháng" },
   { id: "STAGE_B", max: 59, label: "Mẫu giáo nhỏ (Preschooler)", range: "36–59 tháng" },
   { id: "STAGE_C", max: 95, label: "Mẫu giáo lớn & đầu tiểu học", range: "60–95 tháng" },

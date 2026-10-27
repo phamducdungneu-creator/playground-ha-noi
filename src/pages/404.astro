@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { SITE_NAME } from "../config/site";
+
+const base = import.meta.env.BASE_URL;
+---
+
+<Layout title={`Không tìm thấy trang · ${SITE_NAME}`} noindex>
+  <main class="safe-top px-4 max-w-2xl mx-auto py-12 text-center space-y-4">
+    <p class="text-5xl" aria-hidden="true">🌳🔍</p>
+    <h1 class="text-xl font-extrabold text-stone-800">Không tìm thấy trang này</h1>
+    <p class="text-sm text-stone-600">Trang có thể đã được đổi địa chỉ. Bạn thử một trong các mục dưới đây nhé.</p>
+    <div class="flex flex-wrap justify-center gap-2 text-sm font-semibold">
+      <a href={base} class="rounded-2xl bg-emerald-600 text-white px-4 py-2.5">Bảng vận động</a>
+      <a href={`${base}bai-viet/`} class="rounded-2xl bg-white border border-stone-200 px-4 py-2.5">Cẩm nang</a>
+      <a href={`${base}san-choi/`} class="rounded-2xl bg-white border border-stone-200 px-4 py-2.5">Sân chơi Hà Nội</a>
+    </div>
+  </main>
+  <SiteFooter />
+</Layout>

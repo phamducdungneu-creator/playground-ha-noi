@@ -5,11 +5,17 @@ import ChildModal from "../components/ChildModal.astro";
 import ProfileModal from "../components/ProfileModal.astro";
 import HealthScreeningModal from "../components/HealthScreeningModal.astro";
 import { NATURE } from "../lib/metrics";
+import { clinicalReferenceDatabase } from "../data/clinicalReference";
+import { wards } from "../data/placeDirectory";
+import { SITE_DESCRIPTION, SITE_NAME, absUrl } from "../config/site";
 
 const base = import.meta.env.BASE_URL;
+const featuredArticles = clinicalReferenceDatabase.filter((a) => a.status === "drafted");
+const topWards = wards.filter((w) => w.hasPage).slice(0, 10);
+const websiteLd = { "@type": "WebSite", name: SITE_NAME, url: absUrl(), description: SITE_DESCRIPTION, inLanguage: "vi" };
 ---
 
-<Layout>
+<Layout title="Playground Hà Nội — sân chơi, công viên cho bé & bảng vận động ngoài trời" jsonLd={websiteLd}>
   <main class="safe-top safe-bottom px-4 max-w-2xl mx-auto space-y-4">
     <header class="flex items-center justify-between gap-3">
       <div class="min-w-0">
@@ -183,8 +189,26 @@ const base = import.meta.env.BASE_URL;
     </section>
     </div>
 
+    <!-- Static links: the rest of this page is drawn in the browser, so this is what search engines see -->
+    <section aria-labelledby="exploreTitle" class="rounded-3xl bg-white border border-stone-200 p-5 space-y-3">
+      <h2 id="exploreTitle" class="text-base font-extrabold text-stone-800">Khám phá</h2>
+      <div>
+        <a href={`${base}bai-viet/`} class="text-sm font-bold text-emerald-700 underline">Cẩm nang cơ – xương – khớp cho trẻ 1–10 tuổi</a>
+        <ul class="mt-1.5 flex flex-wrap gap-1.5 text-xs">
+          {featuredArticles.map((a) => <li><a href={`${base}bai-viet/${a.slug}`} class="inline-block rounded-full bg-stone-100 px-2.5 py-1 text-stone-700 hover:bg-emerald-50">{a.title.vi}</a></li>)}
+        </ul>
+      </div>
+      <div>
+        <a href={`${base}san-choi/`} class="text-sm font-bold text-emerald-700 underline">Sân chơi, công viên cho bé ở Hà Nội</a>
+        <ul class="mt-1.5 flex flex-wrap gap-1.5 text-xs">
+          {topWards.map((w) => <li><a href={`${base}san-choi/${w.slug}`} class="inline-block rounded-full bg-stone-100 px-2.5 py-1 text-stone-700 hover:bg-emerald-50">{w.name}</a></li>)}
+        </ul>
+      </div>
+    </section>
+
     <footer class="text-center text-[11px] text-stone-400 pb-2 space-y-1">
       <p>Nội dung sức khoẻ chỉ mang tính tham khảo, không thay thế thăm khám của bác sĩ.
+        · <a class="underline" href={`${base}gioi-thieu`}>Giới thiệu</a>
         · <a class="underline" href={`${base}quyen-rieng-tu`}>Quyền riêng tư</a></p>
       <p>Dữ liệu sân chơi, công viên: © <a class="underline" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL).</p>
     </footer>

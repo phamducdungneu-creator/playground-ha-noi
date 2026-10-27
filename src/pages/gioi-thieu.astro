@@ -1,0 +1,56 @@
+---
+// About + editorial policy. Google weighs who writes health content (E-E-A-T):
+// fill in the reviewer's name and credentials once an expert signs off the articles.
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { SITE_DESCRIPTION, SITE_NAME, absUrl } from "../config/site";
+import { breadcrumbLd, publisherLd } from "../lib/seo";
+
+const base = import.meta.env.BASE_URL;
+const crumbs = [{ name: "Trang chủ", href: "" }];
+const jsonLd = [
+  { "@type": "AboutPage", name: `Giới thiệu ${SITE_NAME}`, url: absUrl("gioi-thieu"), inLanguage: "vi", publisher: publisherLd },
+  breadcrumbLd(crumbs, { name: "Giới thiệu", href: "gioi-thieu" }),
+];
+---
+
+<Layout title={`Giới thiệu · ${SITE_NAME}`} description={SITE_DESCRIPTION} jsonLd={jsonLd}>
+  <main class="safe-top px-4 max-w-2xl mx-auto space-y-4">
+    <PageHeader title={`Giới thiệu ${SITE_NAME}`} crumbs={crumbs} />
+
+    <article class="bg-white rounded-3xl border border-stone-200 shadow-sm p-5 space-y-5 text-sm leading-relaxed text-stone-700
+      [&_h2]:text-base [&_h2]:font-extrabold [&_h2]:text-stone-800 [&_h2]:mb-1.5 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1">
+      <section>
+        <h2>Chúng tôi làm gì</h2>
+        <p>
+          {SITE_NAME} giúp cha mẹ đưa con ra ngoài trời nhiều hơn: tìm sân chơi, công viên gần nhà, theo dõi thời gian bé chơi ngoài trời
+          và hiểu đúng những dáng chân, dáng đi thường gặp ở trẻ 1–10 tuổi.
+        </p>
+      </section>
+
+      <section>
+        <h2>Cách chúng tôi biên soạn nội dung sức khoẻ</h2>
+        <ul>
+          <li>Bài viết trong <a href={`${base}bai-viet/`} class="text-emerald-700 underline">Cẩm nang</a> được tổng hợp từ tài liệu hướng dẫn cho gia đình của các hiệp hội chuyên môn (POSNA, AAP, APTA Pediatrics…); nguồn được ghi ở cuối mỗi bài.</li>
+          <li>Mỗi bài cần được bác sĩ chỉnh hình nhi hoặc chuyên viên vật lý trị liệu thẩm định. Bài chưa hoàn thiện được ghi rõ “đang biên soạn”.</li>
+          <li>Nội dung chỉ mang tính thông tin, không thay thế chẩn đoán và điều trị của bác sĩ.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Dữ liệu sân chơi</h2>
+        <p>
+          Danh bạ <a href={`${base}san-choi/`} class="text-emerald-700 underline">sân chơi Hà Nội</a> dựa trên dữ liệu mở OpenStreetMap
+          (© OpenStreetMap contributors, giấy phép ODbL) cùng một số địa điểm chúng tôi tự khảo sát. Thông tin có thể thay đổi — hãy kiểm tra thực tế trước khi đi.
+        </p>
+      </section>
+
+      <section>
+        <h2>Quyền riêng tư</h2>
+        <p>Bạn dùng được mà không cần đăng ký. Xem chi tiết tại <a href={`${base}quyen-rieng-tu`} class="text-emerald-700 underline">Chính sách quyền riêng tư</a>.</p>
+      </section>
+    </article>
+  </main>
+  <SiteFooter />
+</Layout>

@@ -1,0 +1,155 @@
+---
+// Public, server-rendered article for each MSK condition — the pages meant to rank on Google.
+// Unfinished ("skeleton") articles still get a page for the app's links, but stay noindex
+// and out of the sitemap until their clinical text is written.
+import Layout from "../../layouts/Layout.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import { SplitComparisonCard, TestSteps } from "../../components/MskVisuals";
+import { CLUSTERS, STAGES } from "../../components/SegmentationStudio";
+import { NATURE_LABEL, UNIVERSAL_RED_FLAGS, clinicalReferenceDatabase, type ReferenceArticle } from "../../data/clinicalReference";
+import { SITE_NAME, absUrl } from "../../config/site";
+import { breadcrumbLd, publisherLd } from "../../lib/seo";
+
+export function getStaticPaths() {
+  return clinicalReferenceDatabase.map((article) => ({ params: { slug: article.slug }, props: { article } }));
+}
+
+const { article } = Astro.props as { article: ReferenceArticle };
+const base = import.meta.env.BASE_URL;
+const drafted = article.status === "drafted";
+const cluster = CLUSTERS.find((c) => c.id === article.clusterId)!;
+const { clinicalSummary: cs, naturalHistoryAndTimeline: nh, playgroundImplication: pg, parentalActionGuide: pa } = article;
+const redFlags = [...article.redFlags, ...UNIVERSAL_RED_FLAGS.filter((u) => !article.redFlags.includes(u))];
+const stages = STAGES.filter((s) => article.testGuide.stages.includes(s.id)).map((s) => s.range).join(", ");
+const related = clinicalReferenceDatabase.filter((a) => a.clusterId === article.clusterId && a.id !== article.id);
+
+const title = `${article.title.vi} ở trẻ em: khi nào bình thường, khi nào cần đi khám`;
+const description = drafted
+  ? `${cs.keyMessage} Mốc tuổi, cách kiểm tra tại nhà, gợi ý vận động và dấu hiệu cần đi khám.`.slice(0, 300)
+  : `${article.title.vi} (${article.title.en}) ở trẻ em — bài đang được biên soạn.`;
+const crumbs = [
+  { name: "Trang chủ", href: "" },
+  { name: "Cẩm nang", href: "bai-viet/" },
+];
+const url = absUrl(`bai-viet/${article.slug}`);
+const jsonLd = [
+  {
+    "@type": "MedicalWebPage",
+    "@id": url,
+    url,
+    name: title,
+    headline: title,
+    description,
+    inLanguage: "vi",
+    keywords: article.keywords.join(", "),
+    about: { "@type": "MedicalCondition", name: article.title.vi, alternateName: article.title.en },
+    audience: { "@type": "PeopleAudience", audienceType: "Cha mẹ có con 1–10 tuổi" },
+    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: absUrl() },
+    publisher: publisherLd,
+    ...(cs.sources.length && { citation: cs.sources.map((s) => `${s.org} — ${s.topic}`) }),
+  },
+  breadcrumbLd(crumbs, { name: article.title.vi, href: `bai-viet/${article.slug}` }),
+];
+---
+
+<Layout title={`${title} · ${SITE_NAME}`} description={description} noindex={!drafted} ogType="article" jsonLd={jsonLd}>
+  <main class="safe-top px-4 max-w-2xl mx-auto space-y-4">
+    <PageHeader title={title} crumbs={crumbs} />
+
+    <article class="space-y-4 text-sm leading-relaxed text-stone-700
+      [&_section]:bg-white [&_section]:rounded-3xl [&_section]:border [&_section]:border-stone-200 [&_section]:p-5 [&_section]:space-y-2
+      [&_h2]:text-base [&_h2]:font-extrabold [&_h2]:text-stone-800 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1">
+      <p class="text-xs text-stone-500">
+        {cluster.label} · <i>{article.title.en}</i> · <span class="font-semibold text-emerald-800">{NATURE_LABEL[cs.nature]}</span>
+      </p>
+
+      {!drafted && (
+        <p class="rounded-2xl bg-stone-100 px-4 py-3 text-stone-600">
+          Bài đầy đủ đang được biên soạn và thẩm định chuyên môn. Dưới đây là thông tin cơ bản và các dấu hiệu cần đi khám.
+        </p>
+      )}
+
+      <p class="rounded-2xl bg-emerald-50 border border-emerald-100 px-4 py-3 font-semibold text-emerald-900">{cs.keyMessage}</p>
+
+      <section>
+        <h2>{article.title.vi} là gì?</h2>
+        <p>{cs.summary}</p>
+      </section>
+
+      <section>
+        <h2>Nhìn bằng mắt thường: bình thường và cần chú ý</h2>
+        <SplitComparisonCard normal={article.normalState} risk={article.riskState} />
+      </section>
+
+      <section>
+        <h2>Cách kiểm tra tại nhà: {article.testGuide.name}</h2>
+        {stages && <p class="text-xs text-stone-500">Phù hợp với trẻ {stages}.</p>}
+        <TestSteps guide={article.testGuide} />
+      </section>
+
+      <section>
+        <h2>Tiến triển theo tuổi</h2>
+        <ul>
+          {nh.milestones.map((m) => <li><b>{m.age}:</b> {m.note}</li>)}
+        </ul>
+        <h3 class="font-bold text-stone-800 pt-1">Khi nào cần can thiệp</h3>
+        <ul>{nh.interveneWhen.map((x) => <li>{x}</li>)}</ul>
+      </section>
+
+      <section>
+        <h2>Gợi ý khi cho bé ra sân chơi</h2>
+        <h3 class="font-bold text-emerald-800">Nên khuyến khích</h3>
+        <ul>{pg.encouraged.map((x) => <li>{x}</li>)}</ul>
+        <h3 class="font-bold text-amber-800 pt-1">Cần lưu ý</h3>
+        <ul>{pg.caution.map((x) => <li>{x}</li>)}</ul>
+        <p class="pt-1"><a href={`${base}san-choi/`} class="text-emerald-700 font-semibold underline">Tìm sân chơi, công viên gần bạn ở Hà Nội →</a></p>
+      </section>
+
+      <section>
+        <h2>Cha mẹ nên và không nên</h2>
+        <h3 class="font-bold text-emerald-800">Nên</h3>
+        <ul>{pa.do.map((x) => <li>{x}</li>)}</ul>
+        <h3 class="font-bold text-rose-800 pt-1">Không nên</h3>
+        <ul>{pa.avoid.map((x) => <li>{x}</li>)}</ul>
+      </section>
+
+      <section class="!border-rose-200 !bg-rose-50/60">
+        <h2 class="!text-rose-900">Dấu hiệu cần đưa bé đi khám</h2>
+        <ul>{redFlags.map((x) => <li>{x}</li>)}</ul>
+      </section>
+
+      {cs.sources.length > 0 && (
+        <section>
+          <h2>Nguồn tham khảo</h2>
+          <ul>
+            {cs.sources.map((s) => <li><b>{s.org}</b> — {s.topic}{s.site && <span class="text-stone-500"> · {s.site}</span>}</li>)}
+          </ul>
+        </section>
+      )}
+
+      <p class="text-xs text-stone-500">
+        Bài viết mang tính thông tin cho cha mẹ, không thay thế việc thăm khám và chẩn đoán của bác sĩ.
+        <a href={`${base}gioi-thieu`} class="underline">Cách chúng tôi biên soạn nội dung</a>.
+      </p>
+
+      <div class="rounded-3xl bg-gradient-to-br from-emerald-50 to-amber-50 border border-emerald-100 p-5 space-y-2">
+        <p class="font-bold text-stone-800">Theo dõi riêng cho con bạn</p>
+        <p>Tạo hồ sơ miễn phí để làm sàng lọc nhanh theo độ tuổi và nhận gợi ý sân chơi hợp thể trạng của bé.</p>
+        <a href={base} class="inline-block h-11 leading-[2.75rem] px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold">Mở bảng vận động</a>
+      </div>
+    </article>
+
+    {related.length > 0 && (
+      <nav aria-labelledby="related" class="space-y-2">
+        <h2 id="related" class="text-base font-extrabold text-stone-800">Cùng nhóm {cluster.short.toLowerCase()}</h2>
+        <ul class="grid sm:grid-cols-2 gap-2">
+          {related.map((a) => (
+            <li><a href={`${base}bai-viet/${a.slug}`} class="block rounded-2xl bg-white border border-stone-200 px-4 py-3 text-sm font-semibold text-stone-700 hover:border-emerald-300">{a.title.vi}</a></li>
+          ))}
+        </ul>
+      </nav>
+    )}
+  </main>
+  <SiteFooter />
+</Layout>
