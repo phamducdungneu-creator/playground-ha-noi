@@ -23,6 +23,8 @@ export interface TestGuide {
   steps: string[];
   /** what to compare against the two pictures */
   lookFor: string;
+  /** optional bullet version of lookFor for the step list (the video caption keeps lookFor) */
+  lookForGroups?: { title: string; items: string[] }[];
   videoDemoUrl: string | null;
   caution?: string;
 }
@@ -79,7 +81,8 @@ export const VISUAL_GUIDES: Record<number, VisualGuide> = {
   1: {
     normalState: { ...v("Dấu chân ướt có phần eo cong lõm rõ ở mép trong. Khi bé nhón gót, vòm bàn chân hiện ra.", "foot:normal"), label: "Bàn chân thường" },
     riskState: { ...v("Dấu chân in gần kín cả gan bàn chân, mép trong gần như thẳng. Đáng lưu ý hơn nếu vòm không hiện cả khi nhón gót.", "foot:flat"), label: "Bàn chân bẹt" },
-    testGuide: t("Dấu chân ướt và Độ linh hoạt (2 nghiệm pháp)", ALL, [
+    testGuide: {
+      ...t("Dấu chân ướt và Độ linh hoạt (2 nghiệm pháp)", ALL, [
       "Dấu chân ướt: làm ướt đều hai lòng bàn chân trẻ.",
       "Cho trẻ đứng thẳng tự nhiên, dồn đều trọng lượng lên hai chân trên giấy màu hoặc nền gạch khô trong 3 giây.",
       "Nhấc trẻ ra, quan sát phần eo của dấu chân in lại.",
@@ -87,6 +90,24 @@ export const VISUAL_GUIDES: Record<number, VisualGuide> = {
     ],
     "Dấu chân: vùng eo khuyết lõm rõ là bình thường; vùng eo in kín nước hoàn toàn là bẹt; vùng eo đứt quãng hoàn toàn, chỉ thấy gót và mũi là vòm cao. Độ linh hoạt: mép trong bàn chân lập tức cong vồng lên tạo thành vòm → khớp và dây chằng linh hoạt; bàn chân vẫn giữ nguyên dạng phẳng lì → cần lưu ý đặc biệt.",
     "Kết quả quan sát tại nhà chỉ mang tính sàng lọc tham khảo ban đầu, không thay thế chẩn đoán y khoa. Để đánh giá chính xác, nên đưa trẻ đến thăm khám trực tiếp tại cơ sở y tế có chuyên khoa Chỉnh hình Nhi hoặc Phục hồi chức năng Nhi."),
+      lookForGroups: [
+        {
+          title: "Dấu chân",
+          items: [
+            "Vùng eo khuyết lõm rõ → bình thường",
+            "Vùng eo in kín nước hoàn toàn → bẹt",
+            "Vùng eo đứt quãng hoàn toàn, chỉ thấy gót và mũi → vòm cao",
+          ],
+        },
+        {
+          title: "Độ linh hoạt",
+          items: [
+            "Mép trong bàn chân lập tức cong vồng lên tạo thành vòm → khớp và dây chằng linh hoạt",
+            "Bàn chân vẫn giữ nguyên dạng phẳng lì → cần lưu ý đặc biệt",
+          ],
+        },
+      ],
+    },
     views: [
       {
         angle: "Nhìn từ mép trong bàn chân (khi đứng thẳng)",
