@@ -7,7 +7,7 @@
  */
 export const SITE_ORIGIN = import.meta.env.SITE;
 
-export const SITE_NAME = "Playground Hà Nội";
+export const SITE_NAME = "Playground VN";
 export const SITE_DESCRIPTION =
   "Bản đồ sân chơi, công viên cho trẻ em ở Hà Nội, cẩm nang cơ – xương – khớp cho cha mẹ và bảng theo dõi thời gian vận động ngoài trời của bé.";
 
