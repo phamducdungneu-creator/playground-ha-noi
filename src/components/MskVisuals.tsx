@@ -485,7 +485,21 @@ export function TestSteps({ guide }: { guide: TestGuide }) {
           </li>
         ))}
       </ol>
-      <p className="text-sm text-stone-700"><b className="text-sky-800">Cần quan sát:</b> {guide.lookFor}</p>
+      {guide.lookForGroups ? (
+        <div className="text-sm text-stone-700 space-y-1.5">
+          <p><b className="text-sky-800">Cần quan sát:</b></p>
+          {guide.lookForGroups.map((g) => (
+            <div key={g.title}>
+              <p className="font-semibold text-stone-800">{g.title}</p>
+              <ul className="list-disc pl-5 space-y-0.5 leading-relaxed">
+                {g.items.map((i) => <li key={i}>{i}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-stone-700"><b className="text-sky-800">Cần quan sát:</b> {guide.lookFor}</p>
+      )}
       {guide.caution && (
         <p className="flex gap-1.5 text-xs text-amber-900 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5">
           <TriangleAlert className="w-3.5 h-3.5 shrink-0 mt-0.5" />{guide.caution}
