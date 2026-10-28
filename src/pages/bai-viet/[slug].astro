@@ -5,7 +5,7 @@
 import Layout from "../../layouts/Layout.astro";
 import PageHeader from "../../components/PageHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
-import { SplitComparisonCard, TestSteps } from "../../components/MskVisuals";
+import { SplitComparisonCard, TestSteps, ViewChecks } from "../../components/MskVisuals";
 import { CLUSTERS, STAGES } from "../../components/SegmentationStudio";
 import { NATURE_LABEL, UNIVERSAL_RED_FLAGS, clinicalReferenceDatabase, type ReferenceArticle } from "../../data/clinicalReference";
 import { SITE_NAME, absUrl } from "../../config/site";
@@ -80,6 +80,12 @@ const jsonLd = [
       <section>
         <h2>Nhìn bằng mắt thường: bình thường và cần chú ý</h2>
         <SplitComparisonCard normal={article.normalState} risk={article.riskState} />
+        {article.views && (
+          <>
+            <p>Quan sát bàn chân của trẻ trên mặt phẳng cứng, đủ ánh sáng, từ các góc sau:</p>
+            <ViewChecks views={article.views} />
+          </>
+        )}
       </section>
 
       <section>
@@ -113,6 +119,14 @@ const jsonLd = [
         <h3 class="font-bold text-rose-800 pt-1">Không nên</h3>
         <ul>{pa.avoid.map((x) => <li>{x}</li>)}</ul>
       </section>
+
+      {article.complications && (
+        <section>
+          <h2>Hệ lụy nếu không thăm khám và can thiệp đúng cách</h2>
+          <p>{article.complications.intro}</p>
+          <ul>{article.complications.items.map((c) => <li><b>{c.title}:</b> {c.detail}</li>)}</ul>
+        </section>
+      )}
 
       <section class="!border-rose-200 !bg-rose-50/60">
         <h2 class="!text-rose-900">Dấu hiệu cần đưa bé đi khám</h2>

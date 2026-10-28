@@ -46,6 +46,8 @@ export interface ReferenceArticle extends VisualGuide {
   };
   playgroundImplication: { encouraged: string[]; caution: string[] };
   parentalActionGuide: { do: string[]; avoid: string[] };
+  /** optional "what can happen if it is missed" section */
+  complications?: { intro: string; items: { title: string; detail: string }[] };
   redFlags: string[];
 }
 
@@ -95,24 +97,26 @@ const DRAFTED: Record<number, Drafted> = {
     },
     playgroundImplication: {
       encouraged: [
-        "Đi chân trần trên cỏ, cát sạch — kích thích cơ nội tại bàn chân",
-        "Leo thang, leo lưới, đi trên thanh thăng bằng thấp",
-        "Trò nhón gót đi như “chú hươu cao cổ”, nhặt lá bằng ngón chân",
+        "Đi chân trần trên bề mặt an toàn (cỏ, cát sạch, sỏi tròn) để kích thích thụ thể gan bàn chân",
+        "Leo thang dây, đi thanh thăng bằng thấp",
       ],
-      caution: [
-        "Bé có thể mỏi chân sớm hơn khi chạy đường dài — cho nghỉ, không ép",
-        "Kiểm tra bề mặt trước khi cho đi chân trần (nóng, vật sắc)",
-      ],
+      caution: ["Lắng nghe và cho trẻ nghỉ ngơi khi thấy mỏi chân"],
     },
     parentalActionGuide: {
-      do: [
-        "Cho bé đi chân trần ở nơi an toàn mỗi ngày",
-        "Chọn giày vừa chân, đế mềm gập được ở mũi, gót chắc",
-        "Thỉnh thoảng nhờ bé nhón gót để xem vòm chân có xuất hiện không",
-      ],
+      do: ["Chọn giày vừa vặn, mũi rộng, đế mềm dẻo có thể uốn gập ở phần ức bàn chân, gót ôm chắc chắn"],
       avoid: [
-        "Tự mua lót / giày chỉnh hình khi chưa có chỉ định của bác sĩ",
-        "Lo lắng hoặc nhắc bé liên tục về dáng chân",
+        "Tuyệt đối không tự ý mua đế lót chỉnh hình hay giày định hình khi chưa có chỉ định của bác sĩ chuyên khoa",
+        "Săm soi, nhắc nhở liên tục làm trẻ căng thẳng",
+      ],
+    },
+    complications: {
+      intro:
+        "Dù phần lớn các trường hợp bàn chân bẹt mềm ở trẻ nhỏ là biến thể sinh lý và tự hoàn thiện, việc bỏ sót các dạng bàn chân bẹt cứng, bẹt bệnh lý hoặc các trường hợp bẹt có triệu chứng nặng mà không được chẩn đoán và theo dõi y tế đúng cách có thể dẫn đến các hệ lụy lâu dài:",
+      items: [
+        { title: "Ảnh hưởng cơ sinh học và tư thế vận động", detail: "Tình trạng gót chân đổ vẹo liên tục làm thay đổi trục chịu lực của toàn bộ chi dưới, kéo theo sự lệch trục ở khớp gối (gối chữ X hoặc chân vòng kiềng) và khớp háng." },
+        { title: "Đau mỏi cơ xương khớp mạn tính", detail: "Khi lớn hơn, trẻ dễ bị đau nhức cẳng chân, mỏi gan bàn chân, đau vùng gối hoặc đau lưng do áp lực dồn sai lệch lên hệ thống cơ, gân và dây chằng." },
+        { title: "Giảm sức bền vận động", detail: "Trẻ thường xuyên gặp tình trạng mau mỏi khi đi bộ hoặc chạy nhảy đường dài so với các bạn cùng trang lứa, ảnh hưởng đến hiệu suất tham gia các hoạt động thể chất." },
+        { title: "Tổn thương thứ phát", detail: "Tăng nguy cơ viêm gân Achilles, viêm cân gan chân, chai sần bất thường ở các điểm tì đè sai lệch dưới lòng bàn chân khi bước vào độ tuổi trưởng thành." },
       ],
     },
     redFlags: [

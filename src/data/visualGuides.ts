@@ -25,10 +25,26 @@ export interface TestGuide {
   caution?: string;
 }
 
+/** one side of a viewing angle; imageUrl stays null until a real photo exists */
+export interface ViewSign {
+  label: string;
+  description: string;
+  imageUrl: string | null;
+}
+
+/** "look from this angle": what normal vs. at-risk looks like */
+export interface ViewCheck {
+  angle: string;
+  normal: ViewSign;
+  risk: ViewSign;
+}
+
 export interface VisualGuide {
   normalState: VisualState;
   riskState: VisualState;
   testGuide: TestGuide;
+  /** optional detailed observation by angle, shown under the comparison card */
+  views?: ViewCheck[];
 }
 
 const ALL: AgeStageId[] = ["STAGE_A", "STAGE_B", "STAGE_C", "STAGE_D"];
@@ -36,6 +52,7 @@ const FROM_B: AgeStageId[] = ["STAGE_B", "STAGE_C", "STAGE_D"];
 const FROM_C: AgeStageId[] = ["STAGE_C", "STAGE_D"];
 
 const v = (description: string, illustration: string): VisualState => ({ description, illustration, imageUrl: null });
+const sign = (label: string, description: string): ViewSign => ({ label, description, imageUrl: null });
 const t = (name: string, stages: AgeStageId[], steps: string[], lookFor: string, caution?: string): TestGuide => ({
   name, stages, steps, lookFor, caution, videoDemoUrl: null,
 });
@@ -60,7 +77,31 @@ export const VISUAL_GUIDES: Record<number, VisualGuide> = {
   1: {
     normalState: v("Dấu chân ướt có phần eo cong lõm rõ ở mép trong. Khi bé nhón gót, vòm bàn chân hiện ra.", "foot:normal"),
     riskState: v("Dấu chân in gần kín cả gan bàn chân, mép trong gần như thẳng. Đáng lưu ý hơn nếu vòm không hiện cả khi nhón gót.", "foot:flat"),
-    testGuide: WET_FOOT(ALL),
+    testGuide: t("Dấu chân ướt và Độ linh hoạt (2 nghiệm pháp)", ALL, [
+      "Dấu chân ướt: làm ướt đều hai lòng bàn chân trẻ.",
+      "Cho trẻ đứng thẳng tự nhiên, dồn đều trọng lượng lên hai chân trên giấy màu hoặc nền gạch khô trong 3 giây.",
+      "Nhấc trẻ ra, quan sát phần eo của dấu chân in lại.",
+      "Độ linh hoạt: cho trẻ đứng nhón gót (hoặc bố mẹ dùng tay nhẹ nhàng đẩy ngón chân cái của trẻ gập ngược hướng lên trên), quan sát mép trong bàn chân.",
+    ],
+    "Dấu chân: vùng eo khuyết lõm rõ là bình thường; vùng eo in kín nước hoàn toàn là bẹt; vùng eo đứt quãng hoàn toàn, chỉ thấy gót và mũi là vòm cao. Độ linh hoạt: mép trong bàn chân lập tức cong vồng lên tạo thành vòm → khớp và dây chằng linh hoạt; bàn chân vẫn giữ nguyên dạng phẳng lì → cần lưu ý đặc biệt.",
+    "Kết quả quan sát tại nhà chỉ mang tính sàng lọc tham khảo ban đầu, không thay thế chẩn đoán y khoa. Để đánh giá chính xác, nên đưa trẻ đến thăm khám trực tiếp tại cơ sở y tế có chuyên khoa Chỉnh hình Nhi hoặc Phục hồi chức năng Nhi."),
+    views: [
+      {
+        angle: "Nhìn từ mép trong bàn chân (khi đứng thẳng)",
+        normal: sign("Có vòm", "Mép trong gan bàn chân có khoảng hở cong lõm lên, không chạm sàn."),
+        risk: sign("Phẳng (bẹt)", "Toàn bộ rìa trong gan bàn chân hạ thấp, áp sát hoàn toàn xuống mặt sàn."),
+      },
+      {
+        angle: "Nhìn từ phía sau gót chân",
+        normal: sign("Trục thẳng", "Đường thẳng từ bắp chân đi thẳng xuống chính giữa gót chân, cân đối."),
+        risk: sign("Nghiêng trong (valgus)", "Xương gót chân đổ nghiêng ra ngoài, mắt cá trong nhô rõ, cổ chân có cảm giác sập vào trong."),
+      },
+      {
+        angle: "Nhìn động (khi thay đổi tư thế)",
+        normal: sign("Có thay đổi cấu trúc", "Khi trẻ đứng nhón gót hoặc ngồi thõng chân, hõm cong vòm bàn chân hiện rõ trở lại (bàn chân bẹt mềm, linh hoạt)."),
+        risk: sign("Không thay đổi", "Khi nhón gót hoặc ngồi thả lỏng, lòng bàn chân vẫn phẳng lì, không tạo hõm (nghi ngờ bàn chân bẹt cứng)."),
+      },
+    ],
   },
   2: {
     normalState: v("Dấu chân liền một dải từ gót tới mũi, phần eo thu hẹp vừa phải.", "foot:normal"),

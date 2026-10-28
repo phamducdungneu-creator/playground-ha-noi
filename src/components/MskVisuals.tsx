@@ -8,7 +8,7 @@
  */
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Clapperboard, Pause, Play, RotateCcw, TriangleAlert, X } from "lucide-react";
-import type { TestGuide, VisualState } from "../data/visualGuides";
+import type { TestGuide, ViewCheck, ViewSign, VisualState } from "../data/visualGuides";
 
 type Tone = "normal" | "risk";
 
@@ -341,6 +341,37 @@ export function SplitComparisonCard({ normal, risk, note }: { normal: VisualStat
         </figure>
       </div>
       {note && <p className="rounded-xl bg-sky-50 border border-sky-100 px-3 py-2 text-xs text-sky-900">ℹ️ {note}</p>}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// observation by viewing angle
+// ---------------------------------------------------------------------------
+
+function ViewSignCard({ s, tone }: { s: ViewSign; tone: "normal" | "risk" }) {
+  const c = tone === "normal" ? "border-emerald-200 bg-emerald-50 text-emerald-950" : "border-orange-200 bg-orange-50 text-orange-950";
+  return (
+    <figure className={`rounded-xl border p-2.5 space-y-1.5 ${c}`}>
+      {s.imageUrl && <img src={s.imageUrl} alt={s.label} loading="lazy" className="w-full aspect-[4/3] object-cover rounded-lg bg-white" />}
+      <figcaption className="text-xs font-bold">{tone === "normal" ? "🟢" : "🟡"} {s.label}</figcaption>
+      <p className="text-xs leading-relaxed">{s.description}</p>
+    </figure>
+  );
+}
+
+export function ViewChecks({ views }: { views: ViewCheck[] }) {
+  return (
+    <div className="space-y-3">
+      {views.map((v) => (
+        <div key={v.angle} className="space-y-1.5">
+          <p className="text-sm font-bold text-stone-800">{v.angle}</p>
+          <div className="grid grid-cols-2 gap-2">
+            <ViewSignCard s={v.normal} tone="normal" />
+            <ViewSignCard s={v.risk} tone="risk" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -13,9 +13,9 @@
 import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import {
   ArrowLeft, BookOpen, Bone, Brain, CalendarClock, Check, ChevronDown, ClipboardCheck, Eye, Footprints, Hand, HeartPulse,
-  Library, PersonStanding, Search, ShieldCheck, Sparkles, Stethoscope, ThumbsUp, TreePine, X,
+  Library, PersonStanding, Search, ShieldCheck, Sparkles, Stethoscope, ThumbsUp, TreePine, TriangleAlert, X,
 } from "lucide-react";
-import { SplitComparisonCard, TestSteps, VideoGuidePlayer } from "./MskVisuals";
+import { SplitComparisonCard, TestSteps, VideoGuidePlayer, ViewChecks } from "./MskVisuals";
 import QuickTestWizard, { physiologicalNote } from "./QuickTestWizard";
 import {
   CLUSTERS, MSK_CONDITIONS, evaluateChildSegmentation, whoMedians,
@@ -219,6 +219,12 @@ function ArticleDrawer({ article, profile, physiological, onClose }: { article: 
           <Box icon={<Eye className="w-4 h-4" />} title="Nhìn nhận bằng mắt thường" tone="bg-white border-stone-200 text-stone-800">
             <SplitComparisonCard normal={article.normalState} risk={article.riskState}
               note={profile && status && status !== "NONE" ? physiologicalNote(article.conditionId, profile.ageMonths) : undefined} />
+            {article.views && (
+              <div className="pt-2 space-y-2">
+                <p className="text-sm text-stone-600">Quan sát bàn chân của trẻ trên mặt phẳng cứng, đủ ánh sáng, từ các góc sau:</p>
+                <ViewChecks views={article.views} />
+              </div>
+            )}
             <div className="pt-2 space-y-2">
               <p className="text-sm font-bold text-sky-900">Cách kiểm tra tại nhà: {article.testGuide.name}</p>
               <VideoGuidePlayer key={article.id} guide={article.testGuide} normal={article.normalState} risk={article.riskState} />
@@ -283,6 +289,17 @@ function ArticleDrawer({ article, profile, physiological, onClose }: { article: 
               </div>
             </div>
           </Box>
+
+          {article.complications && (
+            <Box icon={<TriangleAlert className="w-4 h-4" />} title="Hệ lụy nếu không thăm khám và can thiệp đúng cách" tone="bg-amber-50/70 border-amber-100 text-amber-900">
+              <p className="text-sm text-stone-700 leading-relaxed">{article.complications.intro}</p>
+              <ul className="space-y-2">
+                {article.complications.items.map((c) => (
+                  <li key={c.title} className="text-sm text-stone-700 leading-relaxed"><b className="text-stone-800">{c.title}:</b> {c.detail}</li>
+                ))}
+              </ul>
+            </Box>
+          )}
 
           <Box icon={<HeartPulse className="w-4 h-4" />} title="Khi nào nên gặp bác sĩ sớm" tone="bg-rose-50/70 border-rose-100 text-rose-900">
             <p className="text-sm text-stone-600 leading-relaxed">
