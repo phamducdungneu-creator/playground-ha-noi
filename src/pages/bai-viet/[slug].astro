@@ -79,7 +79,7 @@ const jsonLd = [
 
       <section>
         <h2>Nhìn bằng mắt thường: bình thường và cần chú ý</h2>
-        <SplitComparisonCard normal={article.normalState} risk={article.riskState} />
+        <SplitComparisonCard normal={article.normalState} risk={article.riskState} hideText={!!article.views} />
         {article.views && (
           <>
             <p>Quan sát bàn chân của trẻ trên mặt phẳng cứng, đủ ánh sáng, từ các góc sau:</p>

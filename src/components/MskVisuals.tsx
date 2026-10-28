@@ -325,19 +325,20 @@ function Picture({ state, tone }: { state: VisualState; tone: Tone }) {
 // split comparison card
 // ---------------------------------------------------------------------------
 
-export function SplitComparisonCard({ normal, risk, note }: { normal: VisualState; risk: VisualState; note?: string }) {
+/** hideText: drop the descriptions when the same information is shown right below (e.g. <ViewChecks>) */
+export function SplitComparisonCard({ normal, risk, note, hideText = false }: { normal: VisualState; risk: VisualState; note?: string; hideText?: boolean }) {
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <figure className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-2.5 sm:p-3 space-y-2">
-          <figcaption className="text-xs sm:text-sm font-bold text-emerald-800 leading-snug">🟢 Cơ thể bình thường trông như thế nào?</figcaption>
+          <figcaption className="text-xs sm:text-sm font-bold text-emerald-800 leading-snug">🟢 {normal.label ?? "Cơ thể bình thường trông như thế nào?"}</figcaption>
           <div className="aspect-square rounded-xl bg-white overflow-hidden"><Picture state={normal} tone="normal" /></div>
-          <p className="text-xs sm:text-[13px] text-emerald-950 leading-relaxed">{normal.description}</p>
+          {!hideText && <p className="text-xs sm:text-[13px] text-emerald-950 leading-relaxed">{normal.description}</p>}
         </figure>
         <figure className="rounded-2xl border-2 border-orange-200 bg-orange-50 p-2.5 sm:p-3 space-y-2">
-          <figcaption className="text-xs sm:text-sm font-bold text-orange-800 leading-snug">🟡 Dấu hiệu cần lưu ý</figcaption>
+          <figcaption className="text-xs sm:text-sm font-bold text-orange-800 leading-snug">🟡 {risk.label ?? "Dấu hiệu cần lưu ý"}</figcaption>
           <div className="aspect-square rounded-xl bg-white overflow-hidden"><Picture state={risk} tone="risk" /></div>
-          <p className="text-xs sm:text-[13px] text-orange-950 leading-relaxed">{risk.description}</p>
+          {!hideText && <p className="text-xs sm:text-[13px] text-orange-950 leading-relaxed">{risk.description}</p>}
         </figure>
       </div>
       {note && <p className="rounded-xl bg-sky-50 border border-sky-100 px-3 py-2 text-xs text-sky-900">ℹ️ {note}</p>}

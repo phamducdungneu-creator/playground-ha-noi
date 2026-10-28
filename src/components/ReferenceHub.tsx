@@ -217,7 +217,7 @@ function ArticleDrawer({ article, profile, physiological, onClose }: { article: 
           )}
 
           <Box icon={<Eye className="w-4 h-4" />} title="Nhìn nhận bằng mắt thường" tone="bg-white border-stone-200 text-stone-800">
-            <SplitComparisonCard normal={article.normalState} risk={article.riskState}
+            <SplitComparisonCard normal={article.normalState} risk={article.riskState} hideText={!!article.views}
               note={profile && status && status !== "NONE" ? physiologicalNote(article.conditionId, profile.ageMonths) : undefined} />
             {article.views && (
               <div className="pt-2 space-y-2">
