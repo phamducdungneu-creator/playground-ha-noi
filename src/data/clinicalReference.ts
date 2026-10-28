@@ -79,7 +79,7 @@ const DRAFTED: Record<number, Drafted> = {
     clinicalSummary: {
       nature: "PHYSIOLOGICAL_VARIANT",
       summary:
-        "Hầu hết trẻ nhỏ trông như bàn chân bẹt vì lớp mỡ đệm dưới gan chân còn dày và dây chằng còn mềm. Vòm bàn chân hình thành dần trong thập kỷ đầu đời. Dạng phổ biến là bàn chân bẹt mềm: vòm xuất hiện khi bé nhón gót hoặc ngồi thả chân, không gây đau và không cần điều trị. Các hiệp hội chỉnh hình nhi khuyến cáo rằng giày hay lót chỉnh hình chưa được chứng minh làm thay đổi sự phát triển của vòm chân ở trẻ không có triệu chứng.",
+        "Hầu hết trẻ nhỏ trông như bàn chân bẹt do lớp mỡ đệm dày và dây chằng mềm, vòm chân sẽ tự hình thành trong thập kỷ đầu đời mà không cần can thiệp nếu không có triệu chứng. Tuy nhiên, việc bỏ sót các trường hợp bẹt cứng hoặc có triệu chứng nặng có thể dẫn đến lệch trục chi dưới, đau mỏi cơ xương khớp mạn tính và giảm sức bền vận động.",
       keyMessage: "Ở trẻ nhỏ, bàn chân bẹt mềm và không đau thường là bình thường — vòm chân sẽ tự hình thành theo tuổi.",
       sources: [POSNA("Flatfoot (Pes Planus)"), AAP("Flat feet in children")],
     },
