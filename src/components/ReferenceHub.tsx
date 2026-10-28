@@ -434,7 +434,7 @@ export default function ReferenceHub({ selectedChildProfile }: { selectedChildPr
               <ArrowLeft className="w-5 h-5" />
             </a>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Playground Hà Nội · Reference</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Playground VN · Reference</p>
               <h1 className="text-lg sm:text-xl font-extrabold truncate">Thư viện kiến thức cơ – xương – khớp</h1>
             </div>
           </div>

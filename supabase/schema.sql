@@ -1,4 +1,4 @@
--- Playground Hà Nội · Supabase schema
+-- Playground VN · Supabase schema
 -- Paste the whole file into Supabase → SQL Editor → Run. Safe to run again.
 --
 -- profiles     one row per account (auto-created on sign-up), carries the role

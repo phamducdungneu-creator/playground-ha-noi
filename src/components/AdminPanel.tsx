@@ -237,7 +237,7 @@ export default function AdminPanel() {
           <ArrowLeft className="w-4 h-4" />
         </a>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Playground Hà Nội · Admin</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Playground VN · Admin</p>
           <h1 className="flex items-center gap-1.5 text-xl font-extrabold text-stone-800"><Shield className="w-5 h-5" />Quản trị người dùng</h1>
         </div>
         {isAdmin && (
