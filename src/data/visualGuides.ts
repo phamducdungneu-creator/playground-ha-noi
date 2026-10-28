@@ -9,6 +9,8 @@
 import type { AgeStageId } from "../components/SegmentationStudio";
 
 export interface VisualState {
+  /** caption above the picture; defaults to a generic normal / at-risk title */
+  label?: string;
   description: string;
   illustration: string;
   imageUrl: string | null;
@@ -75,8 +77,8 @@ const WALL = (lookFor: string) =>
 export const VISUAL_GUIDES: Record<number, VisualGuide> = {
   // ---------------- Cụm 1: Bàn chân & Cổ chân ----------------
   1: {
-    normalState: v("Dấu chân ướt có phần eo cong lõm rõ ở mép trong. Khi bé nhón gót, vòm bàn chân hiện ra.", "foot:normal"),
-    riskState: v("Dấu chân in gần kín cả gan bàn chân, mép trong gần như thẳng. Đáng lưu ý hơn nếu vòm không hiện cả khi nhón gót.", "foot:flat"),
+    normalState: { ...v("Dấu chân ướt có phần eo cong lõm rõ ở mép trong. Khi bé nhón gót, vòm bàn chân hiện ra.", "foot:normal"), label: "Bàn chân thường" },
+    riskState: { ...v("Dấu chân in gần kín cả gan bàn chân, mép trong gần như thẳng. Đáng lưu ý hơn nếu vòm không hiện cả khi nhón gót.", "foot:flat"), label: "Bàn chân bẹt" },
     testGuide: t("Dấu chân ướt và Độ linh hoạt (2 nghiệm pháp)", ALL, [
       "Dấu chân ướt: làm ướt đều hai lòng bàn chân trẻ.",
       "Cho trẻ đứng thẳng tự nhiên, dồn đều trọng lượng lên hai chân trên giấy màu hoặc nền gạch khô trong 3 giây.",
