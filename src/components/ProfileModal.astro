@@ -52,7 +52,7 @@
 <script>
   import { useMemberStore, ageOf, ageGroupOf, ageLabel } from "../stores/memberStore";
   import { exerciseById } from "../data/places";
-  import { conditionById, groupById } from "../data/conditions";
+  import { CLUSTERS, MSK_CONDITIONS } from "../data/msk";
 
   const dialog = document.getElementById("profileModal") as HTMLDialogElement;
   const $ = (id: string) => document.getElementById(id)!;
@@ -76,13 +76,12 @@
       p.textContent = text;
       hb.appendChild(p);
     };
-    if (!hs.screened) line("⚠️ Chưa sàng lọc — hoàn thiện để nhận gợi ý sân chơi phù hợp.", "text-amber-800 text-xs");
-    else if (!hs.selected_condition_ids.length) line("✅ Không ghi nhận dấu hiệu bất thường.", "text-emerald-800 text-xs");
-    else {
-      for (const id of hs.selected_condition_ids) {
-        const cond = conditionById.get(id);
-        if (cond) line(`${groupById.get(cond.group)?.icon ?? "•"} ${cond.name_vi}`);
-      }
+    if (!hs.screened && !Object.keys(c.msk_checklist).length) line("⚠️ Chưa sàng lọc — hoàn thiện để nhận gợi ý sân chơi phù hợp.", "text-amber-800 text-xs");
+    const flagged = MSK_CONDITIONS.filter((m) => (c.msk_checklist[m.id] ?? "NONE") !== "NONE");
+    if (hs.screened && !flagged.length) line("✅ Không ghi nhận dấu hiệu bất thường.", "text-emerald-800 text-xs");
+    for (const m of flagged) {
+      const icon = CLUSTERS.find((g) => g.id === m.cluster)?.icon ?? "•";
+      line(`${icon} ${m.nameVi}${c.msk_checklist[m.id] === "DIAGNOSED" ? " (đã chẩn đoán)" : ""}`);
     }
     if (hs.notes) line(`📝 ${hs.notes}`, "text-xs text-stone-500");
     const list = $("pfList");

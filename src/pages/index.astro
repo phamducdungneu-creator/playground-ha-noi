@@ -430,7 +430,7 @@ const websiteLd = { "@type": "WebSite", name: SITE_NAME, url: absUrl(), descript
 
   function renderSuggestions() {
     const child = useMemberStore.activeChild()!;
-    const conds = child.health_screening.selected_condition_ids;
+    const conds = child.msk_checklist;
     const group = ageGroupOf(ageOf(child));
     const best = places
       .map((p) => ({ p, fit: placeFit(p, conds) }))

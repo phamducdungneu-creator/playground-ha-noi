@@ -1,5 +1,10 @@
 ---
-import { CONDITIONS, DISCLAIMER, GROUPS } from "../data/conditions";
+import { DISCLAIMER } from "../data/conditions";
+import { CLUSTERS, MSK_CONDITIONS } from "../data/msk";
+import { articleByCondition } from "../data/clinicalReference";
+
+// same list, order and grouping as the quick test and the reference hub
+const items = (cluster: string) => MSK_CONDITIONS.filter((c) => c.cluster === cluster);
 ---
 
 <dialog id="healthModal"
@@ -20,31 +25,31 @@ import { CONDITIONS, DISCLAIMER, GROUPS } from "../data/conditions";
 
     <!-- body -->
     <div class="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-2">
-      {GROUPS.map((g, gi) => (
-        <details class="hs-group group rounded-2xl border border-stone-200 bg-white open:border-emerald-200 open:shadow-sm" open={gi === 0}>
+      <p id="hsAgeNote" class="px-1 text-[11px] text-stone-500"></p>
+      {CLUSTERS.map((g, gi) => (
+        <details class="hs-group group rounded-2xl border border-stone-200 bg-white open:border-emerald-200 open:shadow-sm" open={gi === 0} data-group={g.id}>
           <summary class="flex items-center gap-3 px-3 py-3 cursor-pointer list-none select-none">
             <span class="w-9 h-9 rounded-xl bg-emerald-50 grid place-items-center text-lg shrink-0">{g.icon}</span>
             <span class="flex-1 min-w-0">
-              <span class="block text-sm font-bold text-stone-800">{g.name}</span>
-              <span class="block text-[11px] text-stone-500">{CONDITIONS.filter((c) => c.group === g.id).length} tình trạng</span>
+              <span class="block text-sm font-bold text-stone-800">{g.label}</span>
+              <span class="hs-total block text-[11px] text-stone-500"></span>
             </span>
-            <span class="hs-count hidden text-xs font-bold bg-emerald-700 text-white rounded-full min-w-6 h-6 px-2 grid place-items-center" data-group={g.id}></span>
+            <span class="hs-count hidden text-xs font-bold bg-emerald-700 text-white rounded-full min-w-6 h-6 px-2 grid place-items-center"></span>
             <svg class="w-4 h-4 text-stone-400 transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z"/></svg>
           </summary>
           <div class="px-2 pb-2 space-y-1.5">
-            {CONDITIONS.filter((c) => c.group === g.id).map((c) => (
-              <label class="flex gap-3 p-2.5 rounded-xl cursor-pointer hover:bg-stone-50 has-[:checked]:bg-emerald-50 has-[:checked]:ring-1 has-[:checked]:ring-emerald-200">
+            {items(g.id).map((c) => (
+              <label class="hs-item flex gap-3 p-2.5 rounded-xl cursor-pointer hover:bg-stone-50 has-[:checked]:bg-emerald-50 has-[:checked]:ring-1 has-[:checked]:ring-emerald-200"
+                data-stages={articleByCondition.get(c.id)!.testGuide.stages.join(" ")}>
                 <input type="checkbox" name="condition" value={c.id} data-group={g.id}
                   class="mt-0.5 w-5 h-5 shrink-0 accent-emerald-700" />
                 <span class="min-w-0">
-                  <span class="block text-sm font-semibold text-stone-800">{c.name_vi}</span>
-                  <span class="block text-[11px] italic text-stone-400">{c.name_en}</span>
-                  <span class="block text-xs text-stone-600 mt-0.5">{c.sign}</span>
-                  {c.note && <span class="block text-[11px] text-sky-800 mt-0.5">ℹ️ {c.note}</span>}
+                  <span class="block text-sm font-semibold text-stone-800">{c.nameVi} <span class="hs-dx hidden text-[10px] font-bold uppercase text-sky-800 bg-sky-50 rounded px-1.5 py-0.5 align-middle">đã chẩn đoán</span></span>
+                  <span class="block text-[11px] italic text-stone-400">{c.term}</span>
+                  <span class="block text-xs text-stone-600 mt-0.5">{articleByCondition.get(c.id)!.riskState.description}</span>
                 </span>
               </label>
             ))}
-            <p class="px-2.5 pt-1 text-[11px] text-emerald-800">💡 {g.why}</p>
           </div>
         </details>
       ))}
@@ -76,30 +81,37 @@ import { CONDITIONS, DISCLAIMER, GROUPS } from "../data/conditions";
 </dialog>
 
 <script>
-  import { useMemberStore } from "../stores/memberStore";
+  import { useMemberStore, ageMonthsOf } from "../stores/memberStore";
   import { affectedGroups } from "../lib/recommend";
+  import { stageOf, STAGES } from "../data/msk";
 
   const dialog = document.getElementById("healthModal") as HTMLDialogElement;
   const form = document.getElementById("healthForm") as HTMLFormElement;
   const none = document.getElementById("hsNone") as HTMLInputElement;
   const notes = document.getElementById("hsNotes") as HTMLTextAreaElement;
   const boxes = [...form.querySelectorAll<HTMLInputElement>("input[name=condition]")];
+  const groups = [...form.querySelectorAll<HTMLDetailsElement>(".hs-group")];
   const $ = (id: string) => document.getElementById(id)!;
   let childId: string | null = null;
   let required = false;
 
-  const selected = () => boxes.filter((b) => b.checked).map((b) => b.value);
+  const visible = () => boxes.filter((b) => !b.closest<HTMLElement>(".hs-item")!.hidden);
+  const checkedIds = () => visible().filter((b) => b.checked).map((b) => Number(b.value));
 
   function refresh() {
-    const ids = selected();
-    document.querySelectorAll<HTMLElement>(".hs-count").forEach((el) => {
-      const n = boxes.filter((b) => b.checked && b.dataset.group === el.dataset.group).length;
-      el.textContent = String(n);
-      el.classList.toggle("hidden", n === 0);
+    const ids = checkedIds();
+    groups.forEach((g) => {
+      const inGroup = visible().filter((b) => b.dataset.group === g.dataset.group);
+      const n = inGroup.filter((b) => b.checked).length;
+      const count = g.querySelector<HTMLElement>(".hs-count")!;
+      count.textContent = String(n);
+      count.classList.toggle("hidden", n === 0);
+      g.querySelector(".hs-total")!.textContent = `${inGroup.length} tình trạng`;
+      g.hidden = inGroup.length === 0;
     });
-    const groups = affectedGroups(ids);
+    const affected = affectedGroups(Object.fromEntries(ids.map((id) => [id, "AT_RISK" as const])));
     $("hsSummary").textContent = ids.length
-      ? `Đã chọn ${ids.length} dấu hiệu · ảnh hưởng: ${groups.map((g) => g.icon + " " + g.short).join(", ")}`
+      ? `Đã chọn ${ids.length} dấu hiệu · ảnh hưởng: ${affected.map((g) => g.icon + " " + g.short).join(", ")}`
       : none.checked
         ? "Bé không có dấu hiệu bất thường."
         : "Hãy tích dấu hiệu, hoặc chọn “Bé không có dấu hiệu nào ở trên”.";
@@ -113,7 +125,7 @@ import { CONDITIONS, DISCLAIMER, GROUPS } from "../data/conditions";
     }),
   );
   none.addEventListener("change", () => {
-    if (none.checked) boxes.forEach((b) => (b.checked = false));
+    if (none.checked) visible().forEach((b) => (b.checked = false));
     refresh();
   });
 
@@ -123,26 +135,33 @@ import { CONDITIONS, DISCLAIMER, GROUPS } from "../data/conditions";
     if (!child) return;
     childId = child.id;
     required = !!detail.required;
-    const hs = child.health_screening;
-    boxes.forEach((b) => (b.checked = hs.selected_condition_ids.includes(b.value)));
-    none.checked = hs.screened && hs.selected_condition_ids.length === 0;
-    notes.value = hs.notes;
+    const stage = stageOf(ageMonthsOf(child));
+    boxes.forEach((b) => {
+      const status = child.msk_checklist[Number(b.value)] ?? "NONE";
+      const item = b.closest<HTMLElement>(".hs-item")!;
+      // like the quick test: only items that fit the child's age, plus anything already recorded
+      item.hidden = status === "NONE" && !item.dataset.stages!.split(" ").includes(stage);
+      b.checked = status !== "NONE";
+      item.querySelector(".hs-dx")!.classList.toggle("hidden", status !== "DIAGNOSED");
+    });
+    $("hsAgeNote").textContent = `${visible().length}/${boxes.length} dấu hiệu phù hợp nhóm tuổi ${STAGES.find((s) => s.id === stage)!.range} của bé — giống phần Test nhanh.`;
+    none.checked = child.health_screening.screened && checkedIds().length === 0;
+    notes.value = child.health_screening.notes;
     $("hsName").textContent = `· ${child.animal} ${child.nickname}`;
     $("hsStep").textContent = required ? "Bước 2/2 · bắt buộc để hoàn thiện hồ sơ" : "Hồ sơ thể trạng";
     $("hsClose").hidden = required;
     $("hsCancel").hidden = required;
-    // open the groups that already have selections (plus the first one)
-    form.querySelectorAll<HTMLDetailsElement>(".hs-group").forEach((d, i) => {
-      d.open = i === 0 || !!d.querySelector("input:checked");
-    });
     refresh();
+    // open the groups that already have selections, plus the first visible one
+    const first = groups.find((g) => !g.hidden);
+    groups.forEach((g) => (g.open = g === first || !!g.querySelector(".hs-item:not([hidden]) input:checked")));
     dialog.showModal();
   });
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (!childId || (!selected().length && !none.checked)) return;
-    useMemberStore.updateChildHealth(childId, selected(), notes.value.trim());
+    if (!childId || (!checkedIds().length && !none.checked)) return;
+    useMemberStore.saveScreening(childId, visible().map((b) => Number(b.value)), checkedIds(), notes.value.trim());
     dialog.close();
   });
 

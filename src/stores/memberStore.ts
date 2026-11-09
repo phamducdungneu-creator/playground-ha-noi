@@ -8,12 +8,44 @@
 
 export type AgeGroup = "1-3" | "4-6" | "7-10";
 
-/** Parent-reported musculoskeletal screening (ids from src/data/conditions.json). */
+/**
+ * Profile screening status. The ticked items themselves live in Child.msk_checklist (the same
+ * 32-item list as the quick test); `selected_condition_ids` is the retired first list, only
+ * read once to migrate older profiles.
+ */
 export type HealthScreening = {
   screened: boolean;
   selected_condition_ids: string[];
   notes: string;
 };
+
+/** Retired screening ids → MSK ids (src/data/msk.ts); a string = no counterpart, kept in the notes. */
+const LEGACY_CONDITIONS: Record<string, number | string> = {
+  flat_foot: 1, ankle_valgus: 5, high_arch: 2, toe_walking: 3, metatarsus_adductus: 4, sever: 7,
+  hammer_toe: "Ngón búa", juvenile_bunion: "Ngón cái vẹo ngoài sớm",
+  genu_valgum: 8, genu_varum: 9, genu_recurvatum: 12, internal_tibial_torsion: 11, osgood_schlatter: 14,
+  external_tibial_torsion: "Xoay ngoài xương chày",
+  femoral_anteversion: 10, anterior_pelvic_tilt: 21, pelvic_obliquity: 15, trendelenburg: "Yếu cơ mông nhỡ",
+  postural_kyphosis: 16, hyperlordosis: 21, postural_scoliosis: 20, forward_head: 17, winged_scapula: 19,
+  chest_wall: "Lồng ngực lõm / ức gà nhẹ",
+  joint_hypermobility: 23, hypotonia: 24, tight_hamstrings: "Co cứng gân khoeo", dcd: 29, vestibular: 31,
+  proprioceptive: 30, weak_core: 27, bilateral_asymmetry: 32,
+};
+
+/** Moves ticks from the retired list into msk_checklist (as AT_RISK) and empties the old list. */
+function migrateScreening(c: Child): Pick<Child, "health_screening" | "msk_checklist"> {
+  const hs = { ...EMPTY_SCREENING, ...c.health_screening };
+  const checklist = { ...(c.msk_checklist ?? {}) };
+  if (!hs.selected_condition_ids.length) return { health_screening: hs, msk_checklist: checklist };
+  const unmatched: string[] = [];
+  for (const id of hs.selected_condition_ids) {
+    const to = LEGACY_CONDITIONS[id];
+    if (typeof to === "number") checklist[to] ??= "AT_RISK";
+    else if (to) unmatched.push(to);
+  }
+  const notes = unmatched.length ? [hs.notes, `Đã ghi nhận trước đây: ${unmatched.join(", ")}`].filter(Boolean).join(" · ") : hs.notes;
+  return { health_screening: { ...hs, selected_condition_ids: [], notes }, msk_checklist: checklist };
+}
 
 /** One day of activity for a child. `nature` holds NATURE ids (src/lib/metrics.ts), one per touch. */
 export type DayLog = {
@@ -115,11 +147,10 @@ export function ageGroupOf(age: number): AgeGroup {
 export function normalizeChildren(children: Child[]): Child[] {
   return children.map((c) => ({
     ...c,
-    health_screening: { ...EMPTY_SCREENING, ...c.health_screening },
+    ...migrateScreening(c),
     daily_log: c.daily_log ?? {},
     timer_start: c.timer_start ?? null,
     birth_month: c.birth_month ?? null,
-    msk_checklist: c.msk_checklist ?? {},
     sex: c.sex ?? null,
     height_cm: c.height_cm ?? null,
     weight_kg: c.weight_kg ?? null,
@@ -250,16 +281,22 @@ export const useMemberStore = {
     });
   },
 
-  /** Saves the screening and marks it complete (an empty list means "no signs observed"). */
-  updateChildHealth(childId: string, conditionIds: string[], notes?: string) {
+  /**
+   * Saves the profile screening and marks it complete. `checked` holds the ids the parent ticked
+   * among `shown` (the items on screen): newly ticked → AT_RISK, unticked → cleared; items not
+   * shown and existing statuses that stay ticked (e.g. DIAGNOSED) are left as they are.
+   */
+  saveScreening(childId: string, shown: number[], checked: number[], notes: string) {
     const child = state.children.find((c) => c.id === childId);
     if (!child) return;
+    const next = { ...child.msk_checklist };
+    for (const id of shown) {
+      if (!checked.includes(id)) delete next[id];
+      else next[id] ??= "AT_RISK";
+    }
     useMemberStore.updateChild(childId, {
-      health_screening: {
-        screened: true,
-        selected_condition_ids: [...new Set(conditionIds)],
-        notes: notes ?? child.health_screening.notes,
-      },
+      msk_checklist: next,
+      health_screening: { screened: true, selected_condition_ids: [], notes },
     });
   },
 

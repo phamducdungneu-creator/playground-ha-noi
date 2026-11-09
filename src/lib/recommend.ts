@@ -1,13 +1,14 @@
 /**
  * Playground fit for a child's screening result.
  *
- * Every condition group the child has ticked adds requirements:
+ * Every playground group touched by a flagged MSK item (AT_RISK or DIAGNOSED) adds requirements:
  *   - required surfaces present  → bonus;   missing → penalty
  *   - blacklisted (hard) surfaces → penalty (heavier when no soft surface exists to compensate)
  *   - required facilities         → bonus per match (capped); none at all → penalty
  * The weights below are a starting point, not clinical guidance — tune them freely.
  */
-import { FACILITY_LABELS, GROUPS, SURFACE_LABELS, conditionById, type ConditionGroup } from "../data/conditions";
+import { FACILITY_LABELS, GROUPS, SURFACE_LABELS, type ConditionGroup } from "../data/conditions";
+import { MSK_CONDITIONS, type ClusterId, type MskStatus } from "../data/msk";
 import type { Place } from "../data/places";
 
 export const WEIGHTS = {
@@ -28,15 +29,28 @@ export type Fit = {
   bad: string[];
 };
 
-export function affectedGroups(conditionIds: string[]): ConditionGroup[] {
-  const ids = new Set(conditionIds.map((c) => conditionById.get(c)?.group).filter(Boolean));
+/** Which playground groups (src/data/conditions.json) each MSK cluster calls for. */
+const GROUPS_BY_CLUSTER: Record<ClusterId, string[]> = {
+  FOOT_ANKLE: ["g1"],
+  KNEE_HIP: ["g2", "g3"],
+  SPINE_POSTURE: ["g4"],
+  UPPER_LIMB_LAXITY: ["g5"],
+  NEUROMOTOR: ["g5"],
+};
+
+export type Checklist = Record<number, MskStatus>;
+
+export function affectedGroups(checklist: Checklist): ConditionGroup[] {
+  const ids = new Set(
+    MSK_CONDITIONS.filter((c) => (checklist[c.id] ?? "NONE") !== "NONE").flatMap((c) => GROUPS_BY_CLUSTER[c.cluster]),
+  );
   return GROUPS.filter((g) => ids.has(g.id));
 }
 
 const list = (ids: string[], labels: Record<string, string>) => ids.map((i) => labels[i] ?? i).join(", ");
 
-export function placeFit(place: Pick<Place, "surfaces" | "facilities">, conditionIds: string[]): Fit {
-  const groups = affectedGroups(conditionIds);
+export function placeFit(place: Pick<Place, "surfaces" | "facilities">, checklist: Checklist): Fit {
+  const groups = affectedGroups(checklist);
   if (!groups.length) return { score: 0, level: "none", good: [], bad: [] };
   // no data is not the same as unsuitable: don't penalise, just say so
   if (!place.surfaces.length && !place.facilities.length) return { score: 0, level: "unknown", good: [], bad: [] };
