@@ -391,12 +391,22 @@ function ScreeningEditor({ profile }: { profile: SelectedChildProfile }) {
 // main
 // ---------------------------------------------------------------------------
 
+/** ?test=FOOT_ANKLE,KNEE_HIP (from the profile's quick questions) opens the quick test on those areas */
+const TEST_AREAS: ClusterId[] | null = (() => {
+  const p = typeof location === "undefined" ? null : new URLSearchParams(location.search).get("test");
+  return p == null ? null : p.split(",").filter((id): id is ClusterId => CLUSTERS.some((c) => c.id === id));
+})();
+
 export default function ReferenceHub({ selectedChildProfile }: { selectedChildProfile?: SelectedChildProfile }) {
   const fromStore = useStoreProfile();
   const profile = selectedChildProfile ?? fromStore;
   const editable = !selectedChildProfile && !!profile?.id;
 
-  const [tab, setTab] = useState<"personal" | "quicktest" | "directory">("personal");
+  const testAreas = TEST_AREAS;
+  useEffect(() => {
+    if (testAreas) history.replaceState(null, "", location.pathname); // a reload shouldn't restart the test
+  }, [testAreas]);
+  const [tab, setTab] = useState<"personal" | "quicktest" | "directory">(testAreas ? "quicktest" : "personal");
   const [openId, setOpenId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [cluster, setCluster] = useState<ClusterId | "ALL">("ALL");
@@ -556,6 +566,7 @@ export default function ReferenceHub({ selectedChildProfile }: { selectedChildPr
               ageMonths={profile.ageMonths}
               stage={r.ageStage.id}
               checklist={profile.mskChecklist}
+              initialClusters={testAreas ?? undefined}
               onOpenArticle={setOpenId}
               onSave={editable ? (changes) => {
                 for (const c of changes) useMemberStore.setMskStatus(profile.id!, c.conditionId, c.status);

@@ -1,80 +1,145 @@
 ---
+/**
+ * Step 2 of a child profile: a two-question intake instead of a long checklist.
+ *   1. Has a doctor diagnosed anything? → yes opens the 32-item list to mark DIAGNOSED.
+ *   2. Do the parents suspect anything? → picked areas lead straight into the quick test
+ *      (/tham-khao?test=…), which then records AT_RISK items itself.
+ */
 import { DISCLAIMER } from "../data/conditions";
-import { CLUSTERS, MSK_CONDITIONS } from "../data/msk";
+import { CLUSTERS, MSK_CONDITIONS, STAGES } from "../data/msk";
 import { articleByCondition } from "../data/clinicalReference";
 
-// same list, order and grouping as the quick test and the reference hub
-const items = (cluster: string) => MSK_CONDITIONS.filter((c) => c.cluster === cluster);
+/** Parent-friendly wording for each area, with everyday examples. */
+const AREAS: Record<string, { title: string; hint: string }> = {
+  FOOT_ANKLE: { title: "Bàn chân, dáng đi", hint: "bàn chân bẹt, đi nhón gót, đi chụm mũi, cổ chân đổ…" },
+  KNEE_HIP: { title: "Chân, gối, hông", hint: "chân chữ X / chữ O, hay ngồi chữ W, kêu đau chân về đêm…" },
+  SPINE_POSTURE: { title: "Tư thế, lưng, vai", hint: "gù lưng, cổ rùa, vai lệch, bả vai nhô…" },
+  UPPER_LIMB_LAXITY: { title: "Mềm khớp, yếu cơ", hint: "khớp mềm quá mức, mau mỏi, cầm nắm yếu…" },
+  NEUROMOTOR: { title: "Phối hợp, thăng bằng", hint: "vụng về, hay vấp ngã, đứng một chân kém…" },
+};
+
+/** quick-test items per area and age stage, so the button can say how many tests follow */
+const testCounts = Object.fromEntries(
+  CLUSTERS.map((g) => [
+    g.id,
+    Object.fromEntries(
+      STAGES.map((s) => [s.id, MSK_CONDITIONS.filter((c) => c.cluster === g.id && articleByCondition.get(c.id)!.testGuide.stages.includes(s.id)).length]),
+    ),
+  ]),
+);
+
+const optionCls =
+  "flex gap-3 items-start rounded-2xl border-2 border-stone-200 bg-white px-3 py-2.5 cursor-pointer transition has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50";
 ---
 
-<dialog id="healthModal"
-  class="m-auto mb-0 sm:mb-auto w-full sm:w-[min(34rem,calc(100vw-2rem))] max-w-none sm:max-w-[34rem] max-h-[94dvh] rounded-t-3xl sm:rounded-3xl p-0 shadow-2xl backdrop:bg-stone-900/40 backdrop:backdrop-blur-sm">
+<dialog id="healthModal" data-counts={JSON.stringify(testCounts)}
+  class="m-auto mb-0 sm:mb-auto w-full sm:w-[min(32rem,calc(100vw-2rem))] max-w-none sm:max-w-[32rem] max-h-[94dvh] rounded-t-3xl sm:rounded-3xl p-0 shadow-2xl backdrop:bg-stone-900/40 backdrop:backdrop-blur-sm">
   <form id="healthForm" class="flex flex-col max-h-[94dvh]">
     <!-- header -->
     <div class="shrink-0 px-5 pt-4 pb-3 border-b border-stone-100">
       <div class="flex items-start justify-between gap-3">
         <div>
           <p id="hsStep" class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700"></p>
-          <h2 class="text-lg font-extrabold text-stone-800">Sàng lọc thể trạng <span id="hsName" class="text-emerald-800"></span></h2>
-          <p class="text-xs text-stone-500">Tích những dấu hiệu bố mẹ quan sát thấy ở bé. Không chắc thì bỏ qua.</p>
+          <h2 class="text-lg font-extrabold text-stone-800">Hỏi nhanh về <span id="hsName" class="text-emerald-800"></span></h2>
+          <p class="text-xs text-stone-500">2 câu hỏi ngắn. Chưa biết rõ cũng không sao — ứng dụng sẽ hướng dẫn bố mẹ kiểm tra.</p>
         </div>
         <button type="button" id="hsClose" class="w-9 h-9 shrink-0 rounded-full hover:bg-stone-100 text-stone-500" aria-label="Đóng">✕</button>
       </div>
-      <p class="mt-2 text-[11px] leading-snug rounded-xl bg-amber-50 text-amber-900 px-3 py-2">⚕️ {DISCLAIMER}</p>
     </div>
 
     <!-- body -->
-    <div class="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-2">
-      <p id="hsAgeNote" class="px-1 text-[11px] text-stone-500"></p>
-      {CLUSTERS.map((g, gi) => (
-        <details class="hs-group group rounded-2xl border border-stone-200 bg-white open:border-emerald-200 open:shadow-sm" open={gi === 0} data-group={g.id}>
-          <summary class="flex items-center gap-3 px-3 py-3 cursor-pointer list-none select-none">
-            <span class="w-9 h-9 rounded-xl bg-emerald-50 grid place-items-center text-lg shrink-0">{g.icon}</span>
-            <span class="flex-1 min-w-0">
-              <span class="block text-sm font-bold text-stone-800">{g.label}</span>
-              <span class="hs-total block text-[11px] text-stone-500"></span>
-            </span>
-            <span class="hs-count hidden text-xs font-bold bg-emerald-700 text-white rounded-full min-w-6 h-6 px-2 grid place-items-center"></span>
-            <svg class="w-4 h-4 text-stone-400 transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z"/></svg>
-          </summary>
-          <div class="px-2 pb-2 space-y-1.5">
-            {items(g.id).map((c) => (
-              <label class="hs-item flex gap-3 p-2.5 rounded-xl cursor-pointer hover:bg-stone-50 has-[:checked]:bg-emerald-50 has-[:checked]:ring-1 has-[:checked]:ring-emerald-200"
-                data-stages={articleByCondition.get(c.id)!.testGuide.stages.join(" ")}>
-                <input type="checkbox" name="condition" value={c.id} data-group={g.id}
-                  class="mt-0.5 w-5 h-5 shrink-0 accent-emerald-700" />
-                <span class="min-w-0">
-                  <span class="block text-sm font-semibold text-stone-800">{c.nameVi} <span class="hs-dx hidden text-[10px] font-bold uppercase text-sky-800 bg-sky-50 rounded px-1.5 py-0.5 align-middle">đã chẩn đoán</span></span>
-                  <span class="block text-[11px] italic text-stone-400">{c.term}</span>
-                  <span class="block text-xs text-stone-600 mt-0.5">{articleByCondition.get(c.id)!.riskState.description}</span>
-                </span>
-              </label>
-            ))}
-          </div>
-        </details>
-      ))}
+    <div class="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-5">
+      <!-- Q1: diagnosis -->
+      <fieldset class="space-y-2">
+        <legend class="text-sm font-bold text-stone-800 mb-2">1. Bé đã từng được bác sĩ chẩn đoán vấn đề về xương, khớp hay vận động chưa?</legend>
+        <div class="grid grid-cols-2 gap-2">
+          <label class={optionCls}>
+            <input type="radio" name="dx" value="no" class="mt-0.5 w-4 h-4 accent-emerald-700" />
+            <span class="text-sm font-semibold text-stone-700">Chưa / chưa đi khám</span>
+          </label>
+          <label class={optionCls}>
+            <input type="radio" name="dx" value="yes" class="mt-0.5 w-4 h-4 accent-emerald-700" />
+            <span class="text-sm font-semibold text-stone-700">Có, đã được chẩn đoán</span>
+          </label>
+        </div>
 
-      <label class="flex gap-3 p-3 rounded-2xl border border-dashed border-stone-300 cursor-pointer has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50">
-        <input type="checkbox" id="hsNone" class="mt-0.5 w-5 h-5 shrink-0 accent-emerald-700" />
-        <span>
-          <span class="block text-sm font-semibold text-stone-800">Bé không có dấu hiệu nào ở trên</span>
-          <span class="block text-xs text-stone-500">Ứng dụng sẽ gợi ý sân chơi theo khoảng cách và độ tuổi.</span>
-        </span>
-      </label>
+        <div id="hsDxList" hidden class="rounded-2xl bg-sky-50 border border-sky-100 p-2 space-y-1.5">
+          <p class="px-1 text-xs text-sky-900">Tích những tình trạng bác sĩ đã xác định:</p>
+          {CLUSTERS.map((g) => (
+            <details class="hs-group group rounded-xl bg-white border border-sky-100">
+              <summary class="flex items-center gap-2 px-3 py-2 cursor-pointer list-none select-none">
+                <span>{g.icon}</span>
+                <span class="flex-1 text-sm font-semibold text-stone-700">{g.label.replace(/^Cụm \d · /, "")}</span>
+                <span class="hs-count hidden text-[11px] font-bold bg-sky-700 text-white rounded-full min-w-5 h-5 px-1.5 grid place-items-center"></span>
+                <svg class="w-4 h-4 text-stone-400 transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z"/></svg>
+              </summary>
+              <div class="px-2 pb-2 space-y-0.5">
+                {MSK_CONDITIONS.filter((c) => c.cluster === g.id).map((c) => (
+                  <label class="flex gap-2.5 items-start px-2 py-1.5 rounded-lg cursor-pointer hover:bg-stone-50 has-[:checked]:bg-sky-50">
+                    <input type="checkbox" name="diagnosed" value={c.id} class="mt-0.5 w-4 h-4 shrink-0 accent-sky-700" />
+                    <span class="text-sm text-stone-700">{c.nameVi}</span>
+                  </label>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      </fieldset>
 
-      <label class="block space-y-1.5 pt-1">
+      <!-- Q2: suspicion -->
+      <fieldset class="space-y-2">
+        <legend class="text-sm font-bold text-stone-800 mb-2">2. Bố mẹ có đang để ý hay lo lắng điều gì ở bé không?</legend>
+        <label class={optionCls}>
+          <input type="radio" name="concern" value="none" class="mt-0.5 w-4 h-4 accent-emerald-700" />
+          <span>
+            <span class="block text-sm font-semibold text-stone-700">Không, bé có vẻ phát triển bình thường</span>
+          </span>
+        </label>
+        <label class={optionCls}>
+          <input type="radio" name="concern" value="unsure" class="mt-0.5 w-4 h-4 accent-emerald-700" />
+          <span>
+            <span class="block text-sm font-semibold text-stone-700">Chưa rõ — muốn kiểm tra tổng quát</span>
+            <span class="block text-xs text-stone-500">Làm lần lượt các bài test nhanh phù hợp tuổi bé.</span>
+          </span>
+        </label>
+        <label class={optionCls}>
+          <input type="radio" name="concern" value="some" class="mt-0.5 w-4 h-4 accent-emerald-700" />
+          <span>
+            <span class="block text-sm font-semibold text-stone-700">Có, tôi để ý một vài điểm</span>
+            <span class="block text-xs text-stone-500">Chọn khu vực, ứng dụng chỉ đưa các bài test liên quan.</span>
+          </span>
+        </label>
+
+        <div id="hsAreas" hidden class="grid gap-1.5 pl-2">
+          {CLUSTERS.map((g) => (
+            <label class="flex gap-3 items-start rounded-xl border border-stone-200 bg-white px-3 py-2 cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
+              <input type="checkbox" name="area" value={g.id} class="mt-0.5 w-4 h-4 shrink-0 accent-emerald-700" />
+              <span class="text-lg leading-none">{g.icon}</span>
+              <span class="min-w-0">
+                <span class="block text-sm font-semibold text-stone-700">{AREAS[g.id].title}</span>
+                <span class="block text-[11px] text-stone-500">{AREAS[g.id].hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <label class="block space-y-1.5">
         <span class="text-sm font-semibold text-stone-700">Ghi chú thêm <span class="font-normal text-stone-400">(không bắt buộc)</span></span>
-        <textarea id="hsNotes" rows="2" maxlength="300" placeholder="VD: bác sĩ đã chẩn đoán, đang đi giày chỉnh hình, mức độ…"
+        <textarea id="hsNotes" rows="2" maxlength="300" placeholder="VD: đang đi giày chỉnh hình, bé hay kêu mỏi chân…"
           class="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"></textarea>
       </label>
+
+      <p class="text-[11px] leading-snug rounded-xl bg-amber-50 text-amber-900 px-3 py-2">⚕️ {DISCLAIMER}</p>
     </div>
 
     <!-- footer -->
-    <div class="safe-bottom shrink-0 px-4 pt-3 border-t border-stone-100 bg-white">
-      <p id="hsSummary" class="text-xs text-stone-500 mb-2"></p>
+    <div class="safe-bottom shrink-0 px-4 pt-3 border-t border-stone-100 bg-white space-y-2">
+      <p id="hsSummary" class="text-xs text-stone-500"></p>
+      <button type="submit" id="hsSave" class="w-full h-12 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:bg-stone-300 text-white font-bold"></button>
       <div class="flex gap-2">
-        <button type="button" id="hsCancel" class="flex-1 h-11 rounded-xl bg-stone-100 text-stone-700 font-semibold">Để sau</button>
-        <button type="submit" id="hsSave" class="flex-[2] h-11 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:bg-stone-300 text-white font-bold">Lưu & xem sân phù hợp</button>
+        <button type="button" id="hsLater" class="flex-1 h-10 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-100">Lưu, để sau làm test</button>
+        <button type="button" id="hsCancel" class="flex-1 h-10 rounded-xl text-sm font-semibold text-stone-500 hover:bg-stone-100">Đóng</button>
       </div>
     </div>
   </form>
@@ -82,52 +147,56 @@ const items = (cluster: string) => MSK_CONDITIONS.filter((c) => c.cluster === cl
 
 <script>
   import { useMemberStore, ageMonthsOf } from "../stores/memberStore";
-  import { affectedGroups } from "../lib/recommend";
-  import { stageOf, STAGES } from "../data/msk";
+  import { CLUSTERS, stageOf, type AgeStageId, type ClusterId } from "../data/msk";
 
   const dialog = document.getElementById("healthModal") as HTMLDialogElement;
   const form = document.getElementById("healthForm") as HTMLFormElement;
-  const none = document.getElementById("hsNone") as HTMLInputElement;
   const notes = document.getElementById("hsNotes") as HTMLTextAreaElement;
-  const boxes = [...form.querySelectorAll<HTMLInputElement>("input[name=condition]")];
-  const groups = [...form.querySelectorAll<HTMLDetailsElement>(".hs-group")];
+  const counts = JSON.parse(dialog.dataset.counts!) as Record<ClusterId, Record<AgeStageId, number>>;
   const $ = (id: string) => document.getElementById(id)!;
+  const inputs = (name: string) => [...form.querySelectorAll<HTMLInputElement>(`input[name=${name}]`)];
+  const radio = (name: string) => inputs(name).find((i) => i.checked)?.value ?? null;
+  const diagnosed = () => (radio("dx") === "yes" ? inputs("diagnosed").filter((b) => b.checked).map((b) => Number(b.value)) : []);
   let childId: string | null = null;
   let required = false;
+  let stage: AgeStageId = "STAGE_B";
 
-  const visible = () => boxes.filter((b) => !b.closest<HTMLElement>(".hs-item")!.hidden);
-  const checkedIds = () => visible().filter((b) => b.checked).map((b) => Number(b.value));
-
-  function refresh() {
-    const ids = checkedIds();
-    groups.forEach((g) => {
-      const inGroup = visible().filter((b) => b.dataset.group === g.dataset.group);
-      const n = inGroup.filter((b) => b.checked).length;
-      const count = g.querySelector<HTMLElement>(".hs-count")!;
-      count.textContent = String(n);
-      count.classList.toggle("hidden", n === 0);
-      g.querySelector(".hs-total")!.textContent = `${inGroup.length} tình trạng`;
-      g.hidden = inGroup.length === 0;
-    });
-    const affected = affectedGroups(Object.fromEntries(ids.map((id) => [id, "AT_RISK" as const])));
-    $("hsSummary").textContent = ids.length
-      ? `Đã chọn ${ids.length} dấu hiệu · ảnh hưởng: ${affected.map((g) => g.icon + " " + g.short).join(", ")}`
-      : none.checked
-        ? "Bé không có dấu hiệu bất thường."
-        : "Hãy tích dấu hiệu, hoặc chọn “Bé không có dấu hiệu nào ở trên”.";
-    ($("hsSave") as HTMLButtonElement).disabled = !ids.length && !none.checked;
+  /** areas to test: all of them for "unsure", the ticked ones for "some", none otherwise */
+  function areas(): ClusterId[] {
+    const c = radio("concern");
+    if (c === "unsure") return CLUSTERS.map((g) => g.id);
+    if (c === "some") return inputs("area").filter((b) => b.checked).map((b) => b.value as ClusterId);
+    return [];
   }
 
-  boxes.forEach((b) =>
-    b.addEventListener("change", () => {
-      if (b.checked) none.checked = false;
-      refresh();
-    }),
-  );
-  none.addEventListener("change", () => {
-    if (none.checked) visible().forEach((b) => (b.checked = false));
-    refresh();
-  });
+  function refresh() {
+    $("hsDxList").hidden = radio("dx") !== "yes";
+    $("hsAreas").hidden = radio("concern") !== "some";
+    form.querySelectorAll<HTMLDetailsElement>("#hsDxList .hs-group").forEach((d) => {
+      const n = d.querySelectorAll("input:checked").length;
+      const badge = d.querySelector<HTMLElement>(".hs-count")!;
+      badge.textContent = String(n);
+      badge.classList.toggle("hidden", !n);
+    });
+
+    const a = areas();
+    const tests = a.reduce((sum, id) => sum + counts[id][stage], 0);
+    const answered = radio("dx") !== null && radio("concern") !== null && !(radio("concern") === "some" && !a.length);
+    const save = $("hsSave") as HTMLButtonElement;
+    save.disabled = !answered;
+    save.textContent = tests ? `Lưu & làm Test nhanh · ${tests} bài →` : "Lưu hồ sơ";
+    $("hsLater").hidden = !tests;
+    $("hsSummary").textContent = !answered
+      ? radio("concern") === "some" && !a.length
+        ? "Chọn ít nhất một khu vực bố mẹ để ý."
+        : "Trả lời 2 câu hỏi để hoàn thiện hồ sơ."
+      : tests
+        ? "Mỗi bài có hình so sánh và hướng dẫn, chỉ cần quan sát bé vài phút."
+        : diagnosed().length
+          ? `Đã ghi nhận ${diagnosed().length} chẩn đoán của bác sĩ.`
+          : "Bé chưa có dấu hiệu cần lưu ý. Bố mẹ có thể làm Test nhanh bất cứ lúc nào ở mục Thư viện.";
+  }
+  form.addEventListener("change", refresh);
 
   window.addEventListener("cham:health-modal", (e) => {
     const detail = (e as CustomEvent<{ id?: string; required?: boolean }>).detail ?? {};
@@ -135,35 +204,45 @@ const items = (cluster: string) => MSK_CONDITIONS.filter((c) => c.cluster === cl
     if (!child) return;
     childId = child.id;
     required = !!detail.required;
-    const stage = stageOf(ageMonthsOf(child));
-    boxes.forEach((b) => {
-      const status = child.msk_checklist[Number(b.value)] ?? "NONE";
-      const item = b.closest<HTMLElement>(".hs-item")!;
-      // like the quick test: only items that fit the child's age, plus anything already recorded
-      item.hidden = status === "NONE" && !item.dataset.stages!.split(" ").includes(stage);
-      b.checked = status !== "NONE";
-      item.querySelector(".hs-dx")!.classList.toggle("hidden", status !== "DIAGNOSED");
-    });
-    $("hsAgeNote").textContent = `${visible().length}/${boxes.length} dấu hiệu phù hợp nhóm tuổi ${STAGES.find((s) => s.id === stage)!.range} của bé — giống phần Test nhanh.`;
-    none.checked = child.health_screening.screened && checkedIds().length === 0;
-    notes.value = child.health_screening.notes;
-    $("hsName").textContent = `· ${child.animal} ${child.nickname}`;
-    $("hsStep").textContent = required ? "Bước 2/2 · bắt buộc để hoàn thiện hồ sơ" : "Hồ sơ thể trạng";
+    stage = stageOf(ageMonthsOf(child));
+    form.reset();
+
+    // pre-fill from what the profile already holds
+    const hs = child.health_screening;
+    const dx = Object.entries(child.msk_checklist).filter(([, s]) => s === "DIAGNOSED").map(([id]) => id);
+    inputs("diagnosed").forEach((b) => (b.checked = dx.includes(b.value)));
+    if (dx.length) inputs("dx").find((i) => i.value === "yes")!.checked = true;
+    else if (hs.screened) inputs("dx").find((i) => i.value === "no")!.checked = true;
+    if (hs.suspected.length) {
+      inputs("concern").find((i) => i.value === "some")!.checked = true;
+      inputs("area").forEach((b) => (b.checked = hs.suspected.includes(b.value)));
+    } else if (hs.screened) inputs("concern").find((i) => i.value === "none")!.checked = true;
+    form.querySelectorAll<HTMLDetailsElement>("#hsDxList .hs-group").forEach((d) => (d.open = !!d.querySelector("input:checked")));
+    notes.value = hs.notes;
+
+    $("hsName").textContent = `${child.animal} ${child.nickname}`;
+    $("hsStep").textContent = required ? "Bước 2/2 · hoàn thiện hồ sơ" : "Hồ sơ thể trạng";
     $("hsClose").hidden = required;
     $("hsCancel").hidden = required;
     refresh();
-    // open the groups that already have selections, plus the first visible one
-    const first = groups.find((g) => !g.hidden);
-    groups.forEach((g) => (g.open = g === first || !!g.querySelector(".hs-item:not([hidden]) input:checked")));
     dialog.showModal();
   });
 
+  function save(): ClusterId[] | null {
+    if (!childId || ($("hsSave") as HTMLButtonElement).disabled) return null;
+    const a = areas();
+    // "unsure" isn't a suspicion of its own, so only explicitly picked areas are remembered
+    useMemberStore.saveIntake(childId, { diagnosed: diagnosed(), suspected: radio("concern") === "some" ? a : [], notes: notes.value.trim() });
+    dialog.close();
+    return a;
+  }
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (!childId || (!checkedIds().length && !none.checked)) return;
-    useMemberStore.saveScreening(childId, visible().map((b) => Number(b.value)), checkedIds(), notes.value.trim());
-    dialog.close();
+    const a = save();
+    if (a?.length) location.href = `${import.meta.env.BASE_URL}tham-khao?test=${a.join(",")}`;
   });
+  $("hsLater").addEventListener("click", () => save());
 
   // in required mode the only way out is saving
   dialog.addEventListener("cancel", (e) => required && e.preventDefault());

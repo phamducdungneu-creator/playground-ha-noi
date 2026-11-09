@@ -17,6 +17,8 @@ export type HealthScreening = {
   screened: boolean;
   selected_condition_ids: string[];
   notes: string;
+  /** areas (MSK cluster ids) the parents are worried about, from the profile's quick questions */
+  suspected: string[];
 };
 
 /** Retired screening ids → MSK ids (src/data/msk.ts); a string = no counterpart, kept in the notes. */
@@ -83,7 +85,7 @@ export type MskStatus = "NONE" | "AT_RISK" | "DIAGNOSED";
 /** Alias matching the spec's naming. */
 export type ChildProfile = Child;
 
-const EMPTY_SCREENING: HealthScreening = { screened: false, selected_condition_ids: [], notes: "" };
+const EMPTY_SCREENING: HealthScreening = { screened: false, selected_condition_ids: [], notes: "", suspected: [] };
 const EMPTY_BODY = { msk_checklist: {}, sex: null, height_cm: null, weight_kg: null } satisfies Partial<Child>;
 
 /** Signed-in account (src/lib/cloud.ts); null while the family uses the site as a guest. */
@@ -282,21 +284,18 @@ export const useMemberStore = {
   },
 
   /**
-   * Saves the profile screening and marks it complete. `checked` holds the ids the parent ticked
-   * among `shown` (the items on screen): newly ticked → AT_RISK, unticked → cleared; items not
-   * shown and existing statuses that stay ticked (e.g. DIAGNOSED) are left as they are.
+   * Saves the profile's quick questions and marks the profile complete. `diagnosed` is the full
+   * set of doctor-confirmed items (others lose DIAGNOSED); AT_RISK items from the quick test stay.
    */
-  saveScreening(childId: string, shown: number[], checked: number[], notes: string) {
+  saveIntake(childId: string, input: { diagnosed: number[]; suspected: string[]; notes: string }) {
     const child = state.children.find((c) => c.id === childId);
     if (!child) return;
     const next = { ...child.msk_checklist };
-    for (const id of shown) {
-      if (!checked.includes(id)) delete next[id];
-      else next[id] ??= "AT_RISK";
-    }
+    for (const [id, status] of Object.entries(next)) if (status === "DIAGNOSED") delete next[Number(id)];
+    for (const id of input.diagnosed) next[id] = "DIAGNOSED";
     useMemberStore.updateChild(childId, {
       msk_checklist: next,
-      health_screening: { screened: true, selected_condition_ids: [], notes },
+      health_screening: { screened: true, selected_condition_ids: [], notes: input.notes, suspected: input.suspected },
     });
   },
 

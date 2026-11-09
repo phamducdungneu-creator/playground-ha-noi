@@ -36,10 +36,12 @@ export default function QuickTestWizard(props: {
   /** omitted = read-only profile, results are shown but not saved */
   onSave?: (changes: { conditionId: number; status: MskStatus }[]) => void;
   onOpenArticle: (articleId: string) => void;
+  /** areas to start with ticked (e.g. what the parents suspected when creating the profile); default all */
+  initialClusters?: ClusterId[];
 }) {
-  const { childName, ageMonths, stage, checklist, onSave, onOpenArticle } = props;
+  const { childName, ageMonths, stage, checklist, onSave, onOpenArticle, initialClusters } = props;
   const [phase, setPhase] = useState<"intro" | "test" | "summary">("intro");
-  const [clusters, setClusters] = useState<Set<ClusterId>>(new Set(CLUSTERS.map((c) => c.id)));
+  const [clusters, setClusters] = useState<Set<ClusterId>>(new Set(initialClusters?.length ? initialClusters : CLUSTERS.map((c) => c.id)));
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const [video, setVideo] = useState(false);
