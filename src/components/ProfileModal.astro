@@ -50,7 +50,7 @@
 </dialog>
 
 <script>
-  import { useMemberStore, ageOf, ageGroupOf } from "../stores/memberStore";
+  import { useMemberStore, ageOf, ageGroupOf, ageLabel } from "../stores/memberStore";
   import { exerciseById } from "../data/places";
   import { conditionById, groupById } from "../data/conditions";
 
@@ -63,7 +63,7 @@
     const age = ageOf(c);
     $("pfAvatar").textContent = c.animal;
     $("pfName").textContent = c.nickname;
-    $("pfMeta").textContent = `Sinh năm ${c.birth_year} · ${age} tuổi · nhóm ${ageGroupOf(age)}`;
+    $("pfMeta").textContent = `Sinh ${c.birth_month ? `tháng ${c.birth_month}/` : "năm "}${c.birth_year} · ${ageLabel(c)} · nhóm ${ageGroupOf(age)}`;
     $("pfDone").textContent = String(c.completed_exercises.length);
     $("pfHours").textContent = String(c.outdoor_hours);
 

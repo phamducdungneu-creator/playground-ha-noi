@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Activity, ArrowLeft, Baby, ChevronDown, Clock, RefreshCw, Search, Shield, Users } from "lucide-react";
 import { evaluateChildSegmentation, type GroupId, type MskLevel } from "./SegmentationStudio";
 import { onSyncStatus, supabase, type SyncStatus } from "../lib/cloud";
-import { ageOf, dayKey, dayOf, normalizeChildren, useMemberStore, type Child, type FamilyData } from "../stores/memberStore";
+import { ageLabel, ageMonthsOf, dayKey, dayOf, normalizeChildren, useMemberStore, type Child, type FamilyData } from "../stores/memberStore";
 
 type Account = {
   id: string;
@@ -35,7 +35,7 @@ const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 function segment(c: Child) {
   if (!c.sex || c.height_cm == null || c.weight_kg == null) return null;
   return evaluateChildSegmentation({
-    ageMonths: Math.min(120, Math.max(12, ageOf(c) * 12)),
+    ageMonths: Math.min(120, Math.max(12, ageMonthsOf(c))),
     sex: c.sex,
     heightCm: c.height_cm,
     weightKg: c.weight_kg,
@@ -148,7 +148,7 @@ function AccountRow({ a, self, onRole }: { a: Account; self: boolean; onRole: (a
                   <li key={c.id} className="flex items-center gap-2 rounded-xl bg-white border border-stone-200 px-3 py-2 text-sm">
                     <span className="text-xl">{c.animal}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="block font-semibold text-stone-800 truncate">{c.nickname} · {ageOf(c)} tuổi{c.sex ? ` · ${c.sex === "M" ? "nam" : "nữ"}` : ""}</span>
+                      <span className="block font-semibold text-stone-800 truncate">{c.nickname} · {ageLabel(c)}{c.sex ? ` · ${c.sex === "M" ? "nam" : "nữ"}` : ""}</span>
                       <span className="block text-[11px] text-stone-500">
                         {c.height_cm ?? "?"} cm · {c.weight_kg ?? "?"} kg · {marked} mục cơ xương khớp được đánh dấu · {outdoorMin(c, week)}' ngoài trời 7 ngày
                       </span>

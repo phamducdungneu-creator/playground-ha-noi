@@ -22,15 +22,25 @@ const years = Array.from({ length: 11 }, (_, i) => thisYear - i); // newborn .. 
         class="w-full h-11 rounded-xl border border-stone-200 px-3 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" />
     </label>
 
-    <div class="grid grid-cols-[1fr_auto] gap-3 items-end">
-      <label class="block space-y-1.5">
-        <span class="text-sm font-semibold text-stone-700">Năm sinh</span>
-        <select name="birth_year"
-          class="w-full h-11 rounded-xl border border-stone-200 px-3 bg-white outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
-          {years.map((y) => <option value={y}>{y}</option>)}
-        </select>
-      </label>
-      <p id="groupBadge" class="h-11 px-3 rounded-xl bg-amber-50 text-amber-900 text-sm font-semibold grid place-items-center whitespace-nowrap"></p>
+    <div class="space-y-2">
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block space-y-1.5">
+          <span class="text-sm font-semibold text-stone-700">Tháng sinh</span>
+          <select name="birth_month" required
+            class="w-full h-11 rounded-xl border border-stone-200 px-3 bg-white outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
+            <option value="">Chọn tháng</option>
+            {Array.from({ length: 12 }, (_, i) => <option value={i + 1}>Tháng {i + 1}</option>)}
+          </select>
+        </label>
+        <label class="block space-y-1.5">
+          <span class="text-sm font-semibold text-stone-700">Năm sinh</span>
+          <select name="birth_year"
+            class="w-full h-11 rounded-xl border border-stone-200 px-3 bg-white outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100">
+            {years.map((y) => <option value={y}>{y}</option>)}
+          </select>
+        </label>
+      </div>
+      <p id="groupBadge" class="min-h-9 px-3 py-2 rounded-xl bg-amber-50 text-amber-900 text-sm font-semibold"></p>
     </div>
 
     <fieldset class="space-y-1.5">
@@ -54,7 +64,7 @@ const years = Array.from({ length: 11 }, (_, i) => thisYear - i); // newborn .. 
 </dialog>
 
 <script>
-  import { useMemberStore, ageGroupOf } from "../stores/memberStore";
+  import { useMemberStore, ageGroupOf, ageOf, ageLabel } from "../stores/memberStore";
 
   const dialog = document.getElementById("childModal") as HTMLDialogElement;
   const form = document.getElementById("childForm") as HTMLFormElement;
@@ -62,13 +72,21 @@ const years = Array.from({ length: 11 }, (_, i) => thisYear - i); // newborn .. 
   const title = document.getElementById("childModalTitle")!;
   const nicknameInput = form.elements.namedItem("nickname") as HTMLInputElement;
   const yearSelect = form.elements.namedItem("birth_year") as HTMLSelectElement;
+  const monthSelect = form.elements.namedItem("birth_month") as HTMLSelectElement;
   let editingId: string | null = null;
 
   function updateBadge() {
-    const age = Math.max(0, new Date().getFullYear() - Number(yearSelect.value));
-    badge.textContent = `${age} tuổi · nhóm ${ageGroupOf(age)}`;
+    // a birth month later than this month can't be picked for the current year
+    const now = new Date();
+    const thisYear = Number(yearSelect.value) === now.getFullYear();
+    for (const o of monthSelect.options) o.disabled = thisYear && Number(o.value) > now.getMonth() + 1;
+    if (monthSelect.selectedOptions[0]?.disabled) monthSelect.value = "";
+
+    const birth = { birth_year: Number(yearSelect.value), birth_month: Number(monthSelect.value) || null };
+    badge.textContent = `${ageLabel(birth)} · nhóm ${ageGroupOf(ageOf(birth))}${birth.birth_month ? "" : " · chọn tháng sinh để tính tuổi chính xác"}`;
   }
   yearSelect.addEventListener("change", updateBadge);
+  monthSelect.addEventListener("change", updateBadge);
 
   window.addEventListener("cham:child-modal", (e) => {
     const { id } = (e as CustomEvent<{ id?: string }>).detail ?? {};
@@ -78,6 +96,7 @@ const years = Array.from({ length: 11 }, (_, i) => thisYear - i); // newborn .. 
     form.reset();
     nicknameInput.value = child?.nickname ?? "";
     yearSelect.value = String(child?.birth_year ?? new Date().getFullYear() - 4);
+    monthSelect.value = child?.birth_month ? String(child.birth_month) : "";
     const animal = form.querySelector<HTMLInputElement>(`input[name=animal][value="${child?.animal ?? "🐻"}"]`);
     if (animal) animal.checked = true;
     updateBadge();
@@ -89,9 +108,11 @@ const years = Array.from({ length: 11 }, (_, i) => thisYear - i); // newborn .. 
     e.preventDefault();
     const nickname = nicknameInput.value.trim();
     if (!nickname) return nicknameInput.focus();
+    if (!monthSelect.value) return monthSelect.focus();
     const data = {
       nickname,
       birth_year: Number(yearSelect.value),
+      birth_month: Number(monthSelect.value),
       animal: (form.querySelector<HTMLInputElement>("input[name=animal]:checked")?.value) ?? "🐻",
     };
     let id = editingId;

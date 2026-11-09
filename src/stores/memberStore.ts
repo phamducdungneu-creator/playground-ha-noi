@@ -29,6 +29,8 @@ export type Child = {
   id: string;
   nickname: string;
   birth_year: number;
+  /** 1–12; null for profiles saved before the month was asked (age then counts whole years) */
+  birth_month: number | null;
   animal: string;
   completed_exercises: string[];
   outdoor_hours: number;
@@ -85,8 +87,22 @@ function seed(): MemberState {
   return { user: null, children: [], activeChildId: null };
 }
 
-export function ageOf(child: Pick<Child, "birth_year">, now = new Date()): number {
-  return Math.max(0, now.getFullYear() - child.birth_year);
+/** Age in whole months; without a birth month it falls back to whole years. */
+export function ageMonthsOf(child: Pick<Child, "birth_year" | "birth_month">, now = new Date()): number {
+  const months = (now.getFullYear() - child.birth_year) * 12 + (child.birth_month ? now.getMonth() + 1 - child.birth_month : 0);
+  return Math.max(0, months);
+}
+
+export function ageOf(child: Pick<Child, "birth_year" | "birth_month">, now = new Date()): number {
+  return Math.floor(ageMonthsOf(child, now) / 12);
+}
+
+/** "3 tuổi 5 tháng" / "8 tháng" when the birth month is known, "3 tuổi" otherwise. */
+export function ageLabel(child: Pick<Child, "birth_year" | "birth_month">, now = new Date()): string {
+  const m = ageMonthsOf(child, now);
+  if (!child.birth_month) return `${Math.floor(m / 12)} tuổi`;
+  if (m < 12) return `${m} tháng`;
+  return m % 12 ? `${Math.floor(m / 12)} tuổi ${m % 12} tháng` : `${m / 12} tuổi`;
 }
 
 export function ageGroupOf(age: number): AgeGroup {
@@ -102,6 +118,7 @@ export function normalizeChildren(children: Child[]): Child[] {
     health_screening: { ...EMPTY_SCREENING, ...c.health_screening },
     daily_log: c.daily_log ?? {},
     timer_start: c.timer_start ?? null,
+    birth_month: c.birth_month ?? null,
     msk_checklist: c.msk_checklist ?? {},
     sex: c.sex ?? null,
     height_cm: c.height_cm ?? null,
@@ -171,7 +188,7 @@ export const useMemberStore = {
     return state.children.find((c) => c.id === state.activeChildId) ?? state.children[0] ?? null;
   },
 
-  addChild(input: Pick<Child, "nickname" | "birth_year" | "animal">): Child {
+  addChild(input: Pick<Child, "nickname" | "birth_year" | "birth_month" | "animal">): Child {
     const child: Child = { id: newId(), completed_exercises: [], outdoor_hours: 0, health_screening: { ...EMPTY_SCREENING }, daily_log: {}, timer_start: null, ...EMPTY_BODY, ...input };
     set({ ...state, children: [...state.children, child], activeChildId: child.id });
     return child;

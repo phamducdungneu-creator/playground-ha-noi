@@ -22,7 +22,7 @@ import {
   type ClusterId, type MskLevel, type MskStatus, type Sex, type VectorKey,
 } from "./SegmentationStudio";
 import { NATURE_LABEL, UNIVERSAL_RED_FLAGS, articleByCondition, clinicalReferenceDatabase, type Nature, type ReferenceArticle } from "../data/clinicalReference";
-import { ageOf, useMemberStore } from "../stores/memberStore";
+import { ageMonthsOf, useMemberStore } from "../stores/memberStore";
 
 export interface SelectedChildProfile {
   id?: string;
@@ -98,7 +98,7 @@ function useStoreProfile(): SelectedChildProfile | null {
     id: c.id,
     name: c.nickname,
     avatar: c.animal,
-    ageMonths: Math.min(120, Math.max(12, ageOf(c) * 12)), // the store only keeps the birth year
+    ageMonths: Math.min(120, Math.max(12, ageMonthsOf(c))),
     sex: c.sex,
     heightCm: c.height_cm,
     weightKg: c.weight_kg,
